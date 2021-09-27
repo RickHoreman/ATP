@@ -1,12 +1,4 @@
-class Token:
-    # __init__ :: Int -> Int -> None
-    def __init__(self, lineNr : int, charNr : int) -> None:
-        self.lineNr = lineNr
-        self.charNr = charNr
-
-    # __str__ :: None -> String
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}."
+from Base_Token import Token
 
 ### UNUSED
 # class Primitive_Type(Token): 
@@ -55,6 +47,11 @@ class Operator(Token):
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
+class Logic_Operator(Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
 class Assignment(Operator):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
@@ -65,17 +62,83 @@ class Assignment_End(Operator):
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
+class Addition(Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Subtraction(Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Greater_Than_Or_Equal(Logic_Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Smaller_Than_Or_Equal(Logic_Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Greater_Than(Logic_Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Smaller_Than(Logic_Operator):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
 class Function_Definition(Token):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
-class Code_Block_Start(Token):
+class Code_Block_Open(Token):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
-class Code_Block_End(Token):
+class Code_Block_Close(Token):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
+
+class Parameter_List_Open(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Parameter_List_Close(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Endline(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class If_Statement(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class If_Statement_Continuation(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Else(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
+class Return_Statement(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
