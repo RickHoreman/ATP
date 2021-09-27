@@ -7,3 +7,4 @@ class Token:
     # __str__ :: None -> String
     def __str__(self) -> str:
         return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}."
+    
