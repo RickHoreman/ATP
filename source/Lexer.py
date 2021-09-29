@@ -193,6 +193,3 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
 def lex(inputFilePath : str) -> List[Tokens.Token]:
     input = readFile(inputFilePath)
     return lexNext(list(input), 1, 1, [])
-
-for token in lex("input/test-subroutines.sadge"):
-    print(token)
