@@ -117,6 +117,11 @@ class Parameter_List_Close(Token):
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
+class Parameter_Seperator(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)
+
 class Endline(Token):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:

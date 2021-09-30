@@ -109,6 +109,8 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
         tokens.append(Tokens.Addition(lineNr, charNr))
     elif char == '-':
         tokens.append(Tokens.Subtraction(lineNr, charNr))
+    elif char == '。':
+        tokens.append(Tokens.Parameter_Seperator(lineNr, charNr))
     elif listStartsWith(input, ">="):
         tokens.append(Tokens.Greater_Than_Or_Equal(lineNr, charNr))
         return lexNext(rest[1:], lineNr, charNr + 2, tokens)
