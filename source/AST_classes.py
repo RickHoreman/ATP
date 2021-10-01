@@ -1,19 +1,5 @@
 import Tokens
-
-# class Code_Block:
-#     # __str__ :: None -> String
-#     def __str__(self) -> str:
-#         return f"{self.__class__.__name__}."
-
-class AST:
-    def __init__(self, name : str="main") -> None:
-        self.name = name
-        self.codeBlock = Code_Block()
-        self.parameters = Parameter_List()
-
-    # __str__ :: None -> String
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n  Name: {self.name}.\n{self.codeBlock.__str__()}\n{self.parameters.__str__()}"
+from typing import Union
 
 class SimpleStatement:
     # __str__ :: None -> String
@@ -29,7 +15,23 @@ class Assignment(SimpleStatement):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}. Variable name: {self.variableName}, value: {self.value}"
 
-class Code_Block():
+class Expression_Base():
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}."
+
+class Expression(Expression_Base):
+    # __init__ :: Union[Expression_Base, Tokens.Value] -> Tokens.Operator -> Union[Expression_Base, Tokens.Value] -> None
+    def __init__(self, left : Union[Expression_Base, Tokens.Value]=None, operator : Tokens.Operator=None, right : Union[Expression_Base, Tokens.Value]=None) -> None:
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{str(self.left)}\n{str(self.operator)}\n{str(self.right)}"
+
+class Code_Block(SimpleStatement):
     def __init__(self) -> None:
         self.code = []
 
@@ -38,11 +40,9 @@ class Code_Block():
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        codeStr = ""
-        for item in self.code:
-            codeStr += "\n  "
-            codeStr += item.__str__()
-        return f"{self.__class__.__name__}." + codeStr
+        nstr = ""#repeatStr("   ", self.nestlevel) #ADD NEST LEVEL
+        statestr = ''.join(map(lambda st: nstr + str(st) + "\n", self.code))
+        return f"{self.__class__.__name__}.\n" + statestr
 
 class Parameter_List():
     def __init__(self) -> None:
@@ -53,8 +53,36 @@ class Parameter_List():
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        identifiersStr = ""
-        for item in self.identifiers:
-            identifiersStr += "\n  "
-            identifiersStr += item.__str__()
-        return f"{self.__class__.__name__}." + identifiersStr
+        nstr = ""#repeatStr("   ", self.nestlevel) #ADD NEST LEVEL
+        statestr = ''.join(map(lambda st: nstr + "\n" + str(st), self.identifiers))
+        return f"{self.__class__.__name__}." + statestr
+
+class If_Statement(SimpleStatement):
+    def __init__(self, identifier : Tokens.Identifier=None, expression : Expression=None, trueCodeBlock : Code_Block=None, elseCodeBlock : Code_Block=None):
+        self.identifier = identifier
+        self.expression = expression
+        self.trueCodeBlock = trueCodeBlock
+        self.elseCodeBlock = elseCodeBlock
+
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}\n{str(self.codeBlock)}"
+
+class Variable_Assignment(SimpleStatement):
+    def __init__(self, identifier : Tokens.Identifier=None, expression : Expression=None):
+        self.identifier = identifier
+        self.expression = expression
+
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}"
+
+class AST():
+    def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None, codeBlock : Code_Block=None) -> None:
+        self.identifier = identifier
+        self.parameterList = parameterList
+        self.codeBlock = codeBlock
+        
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{self.identifier}.\n{self.parameterList.__str__()}\n{self.codeBlock.__str__()}"

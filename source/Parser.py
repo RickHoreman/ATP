@@ -1,8 +1,8 @@
 import AST_classes as ASTc
-from typing import Callable, List, Tuple
+from typing import List, Tuple, Union
 import Tokens
 import Token_Patterns as TP
-from source.Tokens import Code_Block_Open
+from utilities import unknownError
 
 # checkForPattern :: List[Tokens.Token] -> List[Tokens.Token] -> Bool
 def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]) -> bool:
@@ -21,44 +21,118 @@ def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]
 def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Parameter_List) -> Tuple[List[Tokens.Token], ASTc.Parameter_List]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
-        return tokens, None
+        unknownError(__file__)
     token, *rest = tokens
-    if checkForPattern(tokens, TP.Parameter_List_Last_Item):
-        print("Parameter List End")
+    if isinstance(token, Tokens.Parameter_List_Close):
+        return rest, parameterList
+    elif checkForPattern(tokens, TP.Parameter_List_Last_Item):
         parameterList.append(token)
-        return rest[1:], parameterList
+        return rest[len(TP.Parameter_List_Last_Item)-1:], parameterList
     elif checkForPattern(tokens, TP.Parameter_List_Item):
-        print("Parameter List Item")
         parameterList.append(token)
-        return parameterList(tokens, parameterList)
+        return parseParameterList(rest[len(TP.Parameter_List_Item)-1:], parameterList)
     else:
-        print("Parameter List Ended Prematurely") # ADD PROPER ERROR HANDLING
+        print(f"Parameter List Syntax Error at {token.lineNr}, {token.charNr} or {rest[0].lineNr}, {rest[0].charNr}")
         return tokens, None
 
-def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block) -> ASTc.Code_Block:
+def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression) -> Tuple[List[Tokens.Token], Union[ASTc.Expression, Tokens.Value]]:
     if len(tokens) <= 0:
-        return codeBlock
+        # ADD ERROR HANDLING
+        unknownError(__file__)
+    token, *rest = tokens
+    if expression.left == None:
+        if isinstance(token, Tokens.Expression_Bracket_Open):
+            rest, expression.left = parseExpression(rest, ASTc.Expression())
+            token, *rest = rest
+            if not isinstance(token, Tokens.Expression_Bracket_Close):
+                # ADD ERROR HANDLING
+                unknownError(__file__)
+        elif isinstance(token, Tokens.Value):
+            expression.left = token
+        else:
+            # ADD ERROR HANDLING
+            unknownError(__file__)
+        return parseExpression(rest, expression)
+    elif expression.operator == None:
+        if isinstance(token, Tokens.Operator):
+            expression.operator = token
+            return parseExpression(rest, expression)
+        else:
+            return tokens, expression.left
+    elif expression.right == None:
+        if isinstance(token, Tokens.Expression_Bracket_Open):
+            rest, expression.right = parseExpression(rest, ASTc.Expression())
+            token, *rest = rest
+            if not isinstance(token, Tokens.Expression_Bracket_Close):
+                # ADD ERROR HANDLING
+                unknownError(__file__)
+            else:
+                return parseExpression(rest, expression)
+        elif isinstance(token, Tokens.Value):
+            expression.right = token
+        else:
+            # ADD ERROR HANDLING
+            unknownError(__file__)
+        return parseExpression(rest, expression)
+    else:
+        if isinstance(token, Tokens.Operator):
+            newExpression = ASTc.Expression(expression, token)
+            return parseExpression(rest, newExpression)
+        else:
+            return tokens, expression
+
+def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, needsToEndOnBlockClose : bool=True) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
+    if len(tokens) <= 0:
+        if not needsToEndOnBlockClose:
+            return codeBlock
+        else:
+            # ADD ERROR HANDLING
+            unknownError(__file__)
+    token, *rest = tokens
+    if isinstance(token, Tokens.Code_Block_Close):
+        return rest, codeBlock
+    elif checkForPattern(tokens, TP.Assignment_Or_If_Statement):
+        identifier = token
+        rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression())
+        if checkForPattern(rest, TP.If_Statement_End):
+            rest, trueCodeBlock = parseCodeBlock(rest[len(TP.If_Statement_End):], ASTc.Code_Block())
+            elseCodeBlock = None
+            if checkForPattern(rest, TP.Else):
+                rest, elseCodeBlock = parseCodeBlock(rest[len(TP.Else):], ASTc.Code_Block())
+                codeBlock.append(ASTc.If_Statement(identifier, expression, trueCodeBlock))
+            codeBlock.append(ASTc.If_Statement(identifier, expression, trueCodeBlock, elseCodeBlock))
+        elif checkForPattern(rest, TP.Assignment_End):
+            codeBlock.append(ASTc.Variable_Assignment(identifier, expression))
+            rest = rest[len(TP.Assignment_End):]
+        else:
+            # ADD ERROR HANDLING
+            unknownError(__file__)
+        return parseCodeBlock(rest, codeBlock)
+    # ADD ERROR HANDLING
+    unknownError(__file__)
 
 def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST]=[]) -> List[ASTc.AST]:
     if len(tokens) <= 0:
         return ASTs
-    elif len(ASTs) <= 0:
-        ASTs.append(ASTc.AST())
+    # elif len(ASTs) <= 0:
+    #     ASTs.append(ASTc.AST())
     token, *rest = tokens
-    if checkForPattern(tokens, TP.Integer_Assignment):
-        ASTs[-1].codeBlock.append(ASTc.Assignment(tokens[0].name, tokens[2].value))
-        return parseNext(tokens[len(TP.Integer_Assignment):], ASTs)
-    elif checkForPattern(tokens, TP.Function_Definition_Start):
+    if checkForPattern(tokens, TP.Function_Definition_Start):
+        identifier = tokens[TP.Function_Definition_Start.index(Tokens.Identifier)]
         tokens, parameterList = parseParameterList(rest[2:], ASTc.Parameter_List())
         token, *rest = tokens
         if isinstance(token, Tokens.Endline):
-            dunno
+            ASTs.append(ASTc.AST(identifier, parameterList))
+            return parseNext(rest, ASTs)
         elif isinstance(token, Tokens.Code_Block_Open):
-            
+            rest, codeBlock = parseCodeBlock(rest, ASTc.Code_Block())
+            ASTs.append(ASTc.AST(identifier, parameterList, codeBlock))
+            return parseNext(rest, ASTs)
         else:
-            print(f"Syntax error at {token.lineNr}, {token.charNr}")
-
-    
+            print(f"Expected Endline or Code_Block_Open at {token.lineNr}, {token.charNr}. Got {type(token)}")
+    else:
+        # ADD ERROR HANDLING
+        unknownError(__file__)
 
 def parse(tokens : List[Tokens.Token]) -> List[ASTc.AST]:
     return parseNext(tokens)

@@ -1,7 +1,8 @@
-from typing import Callable, List
+from typing import Callable, List, TypeVar
 import Tokens
 import For_Loop_Tokens as FL_Tokens
 import KeywordCollections as KC
+from functools import reduce
 # import sys
 # sys.setrecursionlimit(200000)
 
@@ -10,18 +11,22 @@ def readFile(inputFilePath : str) -> str:
     with open(inputFilePath, "r", encoding="utf8") as inputFile:
         return inputFile.read() 
 
+A = TypeVar('A')
+B = TypeVar('B')
+C = TypeVar('C')
+# zipWith :: (a → b → c) → [a] → [b] → [c]
+def zipWith(f : Callable[[A, B], C], xs : List[A], ys : List[B]) -> List[C]:
+    if len(xs) == 0 or len(ys) == 0:
+        return [] # Stop when either list is empty
+    else:
+        x, *xrest = xs # Split head x of list xs
+        y, *yrest = ys # Split head y of list ys
+        return [f(x,y)] + zipWith(f, xrest, yrest) # Recursion:
+        # apply f to x and y, then concatenate to f applied to rest
+
 # listStartsWith :: List[String] -> List[String] -> Bool
 def listStartsWith(list1 : List[str], list2 : List[str]) -> bool:
-    if len(list2) <= 0:
-        return True
-    elif len(list1) <= 0:
-        return False
-    char1, *rest1 = list1
-    char2, *rest2 = list2
-    if char1 != char2:
-        return False
-    else:
-        return listStartsWith(rest1, rest2)
+    return reduce(lambda bool1, bool2: bool1 and bool2, zipWith(lambda char1, char2: char1 == char2, list1, list2), True)
 
 # findMapped :: List[String] -> List[String] -> Bool -> List[String] -> List[String] -> Int -> Int
 def findMapped(f : Callable[[List[str], List[str]], bool], list1 : List[str], list2 : List[str], depth : int=0) -> int:
@@ -111,6 +116,10 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
         tokens.append(Tokens.Subtraction(lineNr, charNr))
     elif char == '。':
         tokens.append(Tokens.Parameter_Seperator(lineNr, charNr))
+    elif char == '【':
+        tokens.append(Tokens.Expression_Bracket_Open(lineNr, charNr))
+    elif char == '】':
+        tokens.append(Tokens.Expression_Bracket_Close(lineNr, charNr))
     elif listStartsWith(input, ">="):
         tokens.append(Tokens.Greater_Than_Or_Equal(lineNr, charNr))
         return lexNext(rest[1:], lineNr, charNr + 2, tokens)
