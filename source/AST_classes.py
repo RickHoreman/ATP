@@ -77,6 +77,23 @@ class Variable_Assignment(SimpleStatement):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}"
 
+class Function_Call():
+    def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None) -> None:
+        self.identifier = identifier
+        self.parameterList = parameterList
+        
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{self.identifier}.\n{str(self.parameterList)}"
+
+class Return_Statement(SimpleStatement):
+    def __init__(self, expression : Union[Expression, Function_Call]=None):
+        self.expression = expression
+
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{str(self.expression)}"
+
 class AST():
     def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None, codeBlock : Code_Block=None) -> None:
         self.identifier = identifier
@@ -85,4 +102,4 @@ class AST():
         
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{self.identifier}.\n{self.parameterList.__str__()}\n{self.codeBlock.__str__()}"
+        return f"{self.__class__.__name__}.\n{self.identifier}.\n{str(self.parameterList)}\n{str(self.codeBlock)}"

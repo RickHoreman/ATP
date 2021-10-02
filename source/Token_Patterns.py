@@ -9,4 +9,4 @@ Else = [Tokens.Else, Tokens.Code_Block_Open]
 Function_Definition_Start = [Tokens.Function_Definition, Tokens.Identifier, Tokens.Parameter_List_Open]
 Parameter_List_Item = [Tokens.Identifier, Tokens.Parameter_Seperator]
 Parameter_List_Last_Item = [Tokens.Identifier, Tokens.Parameter_List_Close]
-
+Function_Call = [Tokens.Identifier, Tokens.Parameter_List_Open]

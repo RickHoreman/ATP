@@ -17,6 +17,7 @@ def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]
     else:
         return checkForPattern(instancesRest, patternRest)
 
+#Specifically for function defintions!
 # parseParameterList :: List[Tokens.Token] -> ASTc.Parameter_List -> ASTc.Parameter_List
 def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Parameter_List) -> Tuple[List[Tokens.Token], ASTc.Parameter_List]:
     if len(tokens) <= 0:
@@ -51,6 +52,7 @@ def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression) -
             expression.left = token
         else:
             # ADD ERROR HANDLING
+            print(token)
             unknownError(__file__)
         return parseExpression(rest, expression)
     elif expression.operator == None:
@@ -81,16 +83,52 @@ def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression) -
         else:
             return tokens, expression
 
-def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, needsToEndOnBlockClose : bool=True) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
+def parseFunctionCall(tokens : List[Tokens.Token], functionCall : ASTc.Function_Call) -> Tuple[List[Tokens.Token], ASTc.Function_Call]:
     if len(tokens) <= 0:
-        if not needsToEndOnBlockClose:
-            return codeBlock
-        else:
-            # ADD ERROR HANDLING
-            unknownError(__file__)
+        # ADD ERROR HANDLING
+        unknownError(__file__)
+    token, *rest = tokens
+    if checkForPattern(tokens, TP.Function_Call):
+        rest, parameter = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(tokens[TP.Function_Call.index(Tokens.Identifier)]))
+    elif isinstance(token, Tokens.Value) or isinstance(token, Tokens.Expression_Bracket_Open):
+        rest, parameter = parseExpression(tokens, ASTc.Expression())
+    else:
+        # ADD ERROR HANDLING
+        unknownError(__file__)
+    token, *rest = rest
+    if isinstance(token, Tokens.Parameter_Seperator):
+        if functionCall.parameterList == None:
+            functionCall.parameterList = ASTc.Parameter_List()
+        functionCall.parameterList.append(parameter)
+        return parseFunctionCall(rest, functionCall)
+    elif isinstance(token, Tokens.Parameter_List_Close):
+        if functionCall.parameterList == None:
+            functionCall.parameterList = ASTc.Parameter_List()
+        functionCall.parameterList.append(parameter)
+        return rest, functionCall
+    else:
+        # ADD ERROR HANDLING
+        unknownError(__file__)
+
+def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
+    if len(tokens) <= 0:
+        # ADD ERROR HANDLING
+        unknownError(__file__)
     token, *rest = tokens
     if isinstance(token, Tokens.Code_Block_Close):
         return rest, codeBlock
+    elif isinstance(token, Tokens.Return_Statement):
+        if checkForPattern(rest, TP.Function_Call):
+            rest, returnItem = parseFunctionCall(rest[len(TP.Function_Call):], ASTc.Function_Call(rest[TP.Function_Call.index(Tokens.Identifier)]))
+        else:
+            rest, returnItem = parseExpression(rest, ASTc.Expression())
+        token, *rest = rest
+        if isinstance(token, Tokens.Endline):
+            codeBlock.append(ASTc.Return_Statement(returnItem))
+            return parseCodeBlock(rest, codeBlock)
+        else:
+            # ADD ERROR HANDLING
+            unknownError(__file__)
     elif checkForPattern(tokens, TP.Assignment_Or_If_Statement):
         identifier = token
         rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression())
@@ -109,6 +147,7 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nee
             unknownError(__file__)
         return parseCodeBlock(rest, codeBlock)
     # ADD ERROR HANDLING
+    print(token)
     unknownError(__file__)
 
 def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST]=[]) -> List[ASTc.AST]:
