@@ -66,7 +66,7 @@ class If_Statement(SimpleStatement):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}\n{str(self.codeBlock)}"
+        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}\n{str(self.trueCodeBlock)}\n{str(self.elseCodeBlock)}"
 
 class Variable_Assignment(SimpleStatement):
     def __init__(self, identifier : Tokens.Identifier=None, expression : Expression=None):
@@ -93,6 +93,18 @@ class Return_Statement(SimpleStatement):
     # __str__ :: None -> String
     def __str__(self) -> str:
         return f"{self.__class__.__name__}.\n{str(self.expression)}"
+
+class For_Loop():
+    def __init__(self, startingValue : Union[Expression, int]=None, comparisonOperator : Tokens.Logic_Operator=None, body : Code_Block=None, increment : Union[Expression, int]=None, controlValue : Expression=None) -> None:
+        self.startingValue = startingValue
+        self.comparisonOperator = comparisonOperator
+        self.body = body
+        self.increment = increment
+        self.controlValue = controlValue
+        
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}.\n{self.startingValue}\n{self.comparisonOperator}.\n{str(self.body)}\n{str(self.increment)}\n{str(self.controlValue)}"
 
 class AST():
     def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None, codeBlock : Code_Block=None) -> None:
