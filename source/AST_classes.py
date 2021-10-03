@@ -1,38 +1,33 @@
 import Tokens
 from typing import Union
+from utilities import space
 
 class SimpleStatement:
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}."
-    
-class Assignment(SimpleStatement):
-    def __init__(self, variableName : Tokens.Identifier, value) -> None:
-        self.variableName = variableName
-        self.value = value
-
-    # __str__ :: None -> String
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}. Variable name: {self.variableName}, value: {self.value}"
+        return f"{self.__class__.__name__}"
 
 class Expression_Base():
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}."
+        return f"{self.__class__.__name__}"
 
 class Expression(Expression_Base):
-    # __init__ :: Union[Expression_Base, Tokens.Value] -> Tokens.Operator -> Union[Expression_Base, Tokens.Value] -> None
-    def __init__(self, left : Union[Expression_Base, Tokens.Value]=None, operator : Tokens.Operator=None, right : Union[Expression_Base, Tokens.Value]=None) -> None:
+    # __init__ :: Int -> Union[Expression_Base, Tokens.Value] -> Tokens.Operator -> Union[Expression_Base, Tokens.Value] -> None
+    def __init__(self, nestLevel : int, left : Union[Expression_Base, Tokens.Value]=None, operator : Tokens.Operator=None, right : Union[Expression_Base, Tokens.Value]=None) -> None:
+        self.nestLevel = nestLevel
         self.left = left
         self.operator = operator
         self.right = right
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{str(self.left)}\n{str(self.operator)}\n{str(self.right)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Left: {str(self.left)}\n{spacing}Operator: {str(self.operator)}\n{spacing}Right: {str(self.right)}"
 
 class Code_Block(SimpleStatement):
-    def __init__(self) -> None:
+    def __init__(self, nestLevel : int) -> None:
+        self.nestLevel = nestLevel
         self.code = []
 
     def append(self, statement : SimpleStatement):
@@ -40,12 +35,13 @@ class Code_Block(SimpleStatement):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        nstr = ""#repeatStr("   ", self.nestlevel) #ADD NEST LEVEL
-        statestr = ''.join(map(lambda st: nstr + str(st) + "\n", self.code))
-        return f"{self.__class__.__name__}.\n" + statestr
+        spacing = space(self.nestLevel)
+        statestr = ''.join(map(lambda st: "\n" + spacing + str(st), self.code))
+        return f"{self.__class__.__name__}" + statestr
 
 class Parameter_List():
-    def __init__(self) -> None:
+    def __init__(self, nestLevel : int) -> None:
+        self.nestLevel = nestLevel
         self.identifiers = []
 
     def append(self, identifier : Tokens.Identifier):
@@ -53,12 +49,13 @@ class Parameter_List():
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        nstr = ""#repeatStr("   ", self.nestlevel) #ADD NEST LEVEL
-        statestr = ''.join(map(lambda st: nstr + "\n" + str(st), self.identifiers))
-        return f"{self.__class__.__name__}." + statestr
+        spacing = space(self.nestLevel)
+        statestr = ''.join(map(lambda st: "\n" + spacing + str(st), self.identifiers))
+        return f"{self.__class__.__name__}" + statestr
 
 class If_Statement(SimpleStatement):
-    def __init__(self, identifier : Tokens.Identifier=None, expression : Expression=None, trueCodeBlock : Code_Block=None, elseCodeBlock : Code_Block=None):
+    def __init__(self, nestLevel : int, identifier : Tokens.Identifier=None, expression : Expression=None, trueCodeBlock : Code_Block=None, elseCodeBlock : Code_Block=None):
+        self.nestLevel = nestLevel
         self.identifier = identifier
         self.expression = expression
         self.trueCodeBlock = trueCodeBlock
@@ -66,36 +63,44 @@ class If_Statement(SimpleStatement):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}\n{str(self.trueCodeBlock)}\n{str(self.elseCodeBlock)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Identifier: {str(self.identifier)}\n{spacing}Expression: {str(self.expression)}\n{spacing}True: {str(self.trueCodeBlock)}\n{spacing}Else: {str(self.elseCodeBlock)}"
 
 class Variable_Assignment(SimpleStatement):
-    def __init__(self, identifier : Tokens.Identifier=None, expression : Expression=None):
+    def __init__(self, nestLevel : int, identifier : Tokens.Identifier=None, expression : Expression=None):
+        self.nestLevel = nestLevel
         self.identifier = identifier
         self.expression = expression
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{str(self.identifier)}\n{str(self.expression)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Variable: {str(self.identifier)}\n{spacing}Value: {str(self.expression)}"
 
 class Function_Call():
-    def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None) -> None:
+    def __init__(self, nestLevel : int, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None) -> None:
+        self.nestLevel = nestLevel
         self.identifier = identifier
         self.parameterList = parameterList
         
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{self.identifier}.\n{str(self.parameterList)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Identifier: {self.identifier}\n{spacing}Parameter List: {str(self.parameterList)}"
 
 class Return_Statement(SimpleStatement):
-    def __init__(self, expression : Union[Expression, Function_Call]=None):
+    def __init__(self, nestLevel : int, expression : Union[Expression, Function_Call]=None):
+        self.nestLevel = nestLevel
         self.expression = expression
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{str(self.expression)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Return Value: {str(self.expression)}"
 
 class For_Loop():
-    def __init__(self, startingValue : Union[Expression, int]=None, comparisonOperator : Tokens.Logic_Operator=None, body : Code_Block=None, increment : Union[Expression, int]=None, controlValue : Expression=None) -> None:
+    def __init__(self, nestLevel : int, startingValue : Union[Expression, int]=None, comparisonOperator : Tokens.Logic_Operator=None, body : Code_Block=None, increment : Union[Expression, int]=None, controlValue : Expression=None) -> None:
+        self.nestLevel = nestLevel
         self.startingValue = startingValue
         self.comparisonOperator = comparisonOperator
         self.body = body
@@ -104,14 +109,17 @@ class For_Loop():
         
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{self.startingValue}\n{self.comparisonOperator}.\n{str(self.body)}\n{str(self.increment)}\n{str(self.controlValue)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Starting Value: {self.startingValue}\n{spacing}Comparison Operator: {self.comparisonOperator}\n{spacing}Loop Body: {str(self.body)}\n{spacing}Increment Value: {str(self.increment)}\n{spacing}Control Value: {str(self.controlValue)}"
 
 class AST():
-    def __init__(self, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None, codeBlock : Code_Block=None) -> None:
+    def __init__(self, nestLevel : int, identifier : Tokens.Identifier=None, parameterList : Parameter_List=None, codeBlock : Code_Block=None) -> None:
+        self.nestLevel = nestLevel
         self.identifier = identifier
         self.parameterList = parameterList
         self.codeBlock = codeBlock
         
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}.\n{self.identifier}.\n{str(self.parameterList)}\n{str(self.codeBlock)}"
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Identifier: {self.identifier}\n{spacing}Parameter List: {str(self.parameterList)}\n{spacing}Code Block: {str(self.codeBlock)}"

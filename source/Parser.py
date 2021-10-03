@@ -18,8 +18,8 @@ def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]
         return checkForPattern(instancesRest, patternRest)
 
 #Specifically for function defintions!
-# parseParameterList :: List[Tokens.Token] -> ASTc.Parameter_List -> ASTc.Parameter_List
-def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Parameter_List) -> Tuple[List[Tokens.Token], ASTc.Parameter_List]:
+# parseParameterList :: List[Tokens.Token] -> ASTc.Parameter_List -> Int ->Tuple[, List[Tokens.Token], ASTc.Parameter_List]
+def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Parameter_List, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Parameter_List]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
         unknownError(__file__)
@@ -31,19 +31,19 @@ def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Paramet
         return rest[len(TP.Parameter_List_Last_Item)-1:], parameterList
     elif checkForPattern(tokens, TP.Parameter_List_Item):
         parameterList.append(token)
-        return parseParameterList(rest[len(TP.Parameter_List_Item)-1:], parameterList)
+        return parseParameterList(rest[len(TP.Parameter_List_Item)-1:], parameterList, nestLevel)
     else:
         print(f"Parameter List Syntax Error at {token.lineNr}, {token.charNr} or {rest[0].lineNr}, {rest[0].charNr}")
         return tokens, None
 
-def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression) -> Tuple[List[Tokens.Token], Union[ASTc.Expression, Tokens.Value]]:
+def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression, nestLevel : int) -> Tuple[List[Tokens.Token], Union[ASTc.Expression, Tokens.Value]]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
         unknownError(__file__)
     token, *rest = tokens
     if expression.left == None:
         if isinstance(token, Tokens.Expression_Bracket_Open):
-            rest, expression.left = parseExpression(rest, ASTc.Expression())
+            rest, expression.left = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
             token, *rest = rest
             if not isinstance(token, Tokens.Expression_Bracket_Close):
                 # ADD ERROR HANDLING
@@ -54,63 +54,63 @@ def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression) -
             # ADD ERROR HANDLING
             print(token)
             unknownError(__file__)
-        return parseExpression(rest, expression)
+        return parseExpression(rest, expression, nestLevel)
     elif expression.operator == None:
         if isinstance(token, Tokens.Operator):
             expression.operator = token
-            return parseExpression(rest, expression)
+            return parseExpression(rest, expression, nestLevel)
         else:
             return tokens, expression.left
     elif expression.right == None:
         if isinstance(token, Tokens.Expression_Bracket_Open):
-            rest, expression.right = parseExpression(rest, ASTc.Expression())
+            rest, expression.right = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
             token, *rest = rest
             if not isinstance(token, Tokens.Expression_Bracket_Close):
                 # ADD ERROR HANDLING
                 unknownError(__file__)
             else:
-                return parseExpression(rest, expression)
+                return parseExpression(rest, expression, nestLevel)
         elif isinstance(token, Tokens.Value):
             expression.right = token
         else:
             # ADD ERROR HANDLING
             unknownError(__file__)
-        return parseExpression(rest, expression)
+        return parseExpression(rest, expression, nestLevel)
     else:
         if isinstance(token, Tokens.Operator):
-            newExpression = ASTc.Expression(expression, token)
-            return parseExpression(rest, newExpression)
+            newExpression = ASTc.Expression(nestLevel + 1, expression, token)
+            return parseExpression(rest, newExpression, nestLevel)
         else:
             return tokens, expression
 
-def parseFunctionCall(tokens : List[Tokens.Token], functionCall : ASTc.Function_Call) -> Tuple[List[Tokens.Token], ASTc.Function_Call]:
+def parseFunctionCall(tokens : List[Tokens.Token], functionCall : ASTc.Function_Call, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Function_Call]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
         unknownError(__file__)
     token, *rest = tokens
     if checkForPattern(tokens, TP.Function_Call):
-        rest, parameter = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(tokens[TP.Function_Call.index(Tokens.Identifier)]))
+        rest, parameter = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(nestLevel + 1, tokens[TP.Function_Call.index(Tokens.Identifier)]), nestLevel+1)
     elif isinstance(token, Tokens.Value) or isinstance(token, Tokens.Expression_Bracket_Open):
-        rest, parameter = parseExpression(tokens, ASTc.Expression())
+        rest, parameter = parseExpression(tokens, ASTc.Expression(nestLevel + 1), nestLevel+1)
     else:
         # ADD ERROR HANDLING
         unknownError(__file__)
     token, *rest = rest
     if isinstance(token, Tokens.Parameter_Seperator):
         if functionCall.parameterList == None:
-            functionCall.parameterList = ASTc.Parameter_List()
+            functionCall.parameterList = ASTc.Parameter_List(nestLevel + 1)
         functionCall.parameterList.append(parameter)
-        return parseFunctionCall(rest, functionCall)
+        return parseFunctionCall(rest, functionCall, nestLevel)
     elif isinstance(token, Tokens.Parameter_List_Close):
         if functionCall.parameterList == None:
-            functionCall.parameterList = ASTc.Parameter_List()
+            functionCall.parameterList = ASTc.Parameter_List(nestLevel + 1)
         functionCall.parameterList.append(parameter)
         return rest, functionCall
     else:
         # ADD ERROR HANDLING
         unknownError(__file__)
 
-def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop) -> Tuple[List[Tokens.Token], ASTc.For_Loop]:
+def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.For_Loop]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
         unknownError(__file__)
@@ -120,47 +120,47 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop) -> Tuple[
             rest = tokens[len(TP.For_Loop_Opening):]
             if checkForPattern(rest, TP.For_Loop_Default_Starting_Value):
                 forLoop.startingValue = 1
-                return parseForLoop(rest[len(TP.For_Loop_Default_Starting_Value):], forLoop)
+                return parseForLoop(rest[len(TP.For_Loop_Default_Starting_Value):], forLoop, nestLevel)
             elif checkForPattern(rest, TP.For_Loop_Starting_Value_Definition):
                 rest = rest[len(TP.For_Loop_Starting_Value_Definition):]
-                rest, expression = parseExpression(rest, ASTc.Expression())
+                rest, expression = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
                 if checkForPattern(rest, TP.For_Loop_Starting_Value_Definition_End):
                     rest = rest[len(TP.For_Loop_Starting_Value_Definition_End):]
                     forLoop.startingValue = expression
-                    return parseForLoop(rest, forLoop)
+                    return parseForLoop(rest, forLoop, nestLevel)
         # ADD ERROR HANDLING
         unknownError(__file__)
     elif forLoop.comparisonOperator == None:
         if isinstance(token, Tokens.Logic_Operator):
             forLoop.comparisonOperator = token
-            return parseForLoop(rest, forLoop)
+            return parseForLoop(rest, forLoop, nestLevel)
         # ADD ERROR HANDLING
         unknownError(__file__)
     elif forLoop.body == None:
         if checkForPattern(tokens, TP.For_Loop_Body_Definition):
-            rest, codeBlock = parseCodeBlock(tokens[len(TP.For_Loop_Body_Definition):], ASTc.Code_Block())
+            rest, codeBlock = parseCodeBlock(tokens[len(TP.For_Loop_Body_Definition):], ASTc.Code_Block(nestLevel + 1), nestLevel+1)
             if checkForPattern(rest, TP.For_Loop_Body_Definition_End):
                 forLoop.body = codeBlock
-                return parseForLoop(rest[len(TP.For_Loop_Body_Definition_End):], forLoop)
+                return parseForLoop(rest[len(TP.For_Loop_Body_Definition_End):], forLoop, nestLevel)
         # ADD ERROR HANDLING
         print(rest[1])
         unknownError(__file__)
     elif forLoop.increment == None:
         if checkForPattern(tokens, TP.For_Loop_Default_Increment):
             forLoop.increment = 1
-            return parseForLoop(tokens[len(TP.For_Loop_Default_Increment):], forLoop)
+            return parseForLoop(tokens[len(TP.For_Loop_Default_Increment):], forLoop, nestLevel)
         elif checkForPattern(tokens, TP.For_Loop_Default_Decrement):
             forLoop.increment = -1
-            return parseForLoop(tokens[len(TP.For_Loop_Default_Decrement):], forLoop)
+            return parseForLoop(tokens[len(TP.For_Loop_Default_Decrement):], forLoop, nestLevel)
         elif checkForPattern(tokens, TP.For_Loop_Increment_Definition):
-            rest, expression = parseExpression(tokens[len(TP.For_Loop_Increment_Definition):], ASTc.Expression())
+            rest, expression = parseExpression(tokens[len(TP.For_Loop_Increment_Definition):], ASTc.Expression(nestLevel + 1), nestLevel+1)
             forLoop.increment = expression
             return parseForLoop(rest, forLoop)
         # ADD ERROR HANDLING
         unknownError(__file__)
     elif forLoop.controlValue == None:
         if isinstance(token, Tokens.Value) or isinstance(token, Tokens.Expression_Bracket_Open):
-            rest, expression = parseExpression(tokens, ASTc.Expression())
+            rest, expression = parseExpression(tokens, ASTc.Expression(nestLevel + 1), nestLevel+1)
             if checkForPattern(rest, TP.For_Loop_End):
                 forLoop.controlValue = expression
                 return rest[len(TP.For_Loop_End):], forLoop
@@ -169,7 +169,7 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop) -> Tuple[
     # ADD ERROR HANDLING
     unknownError(__file__)
 
-def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
+def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
     if len(tokens) <= 0:
         # ADD ERROR HANDLING
         unknownError(__file__)
@@ -178,58 +178,56 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block) -> 
         return rest, codeBlock
     elif isinstance(token, Tokens.Return_Statement):
         if checkForPattern(rest, TP.Function_Call):
-            rest, returnItem = parseFunctionCall(rest[len(TP.Function_Call):], ASTc.Function_Call(rest[TP.Function_Call.index(Tokens.Identifier)]))
+            rest, returnItem = parseFunctionCall(rest[len(TP.Function_Call):], ASTc.Function_Call(nestLevel + 1, rest[TP.Function_Call.index(Tokens.Identifier)]), nestLevel+1)
         else:
-            rest, returnItem = parseExpression(rest, ASTc.Expression())
+            rest, returnItem = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
         token, *rest = rest
         if isinstance(token, Tokens.Endline):
-            codeBlock.append(ASTc.Return_Statement(returnItem))
-            return parseCodeBlock(rest, codeBlock)
+            codeBlock.append(ASTc.Return_Statement(nestLevel + 1, returnItem))
+            return parseCodeBlock(rest, codeBlock, nestLevel)
         else:
             # ADD ERROR HANDLING
             unknownError(__file__)
     elif checkForPattern(tokens, TP.Assignment_Or_If_Statement):
         identifier = token
-        rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression())
+        rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression(nestLevel + 1), nestLevel+1)
         if checkForPattern(rest, TP.If_Statement_End):
-            rest, trueCodeBlock = parseCodeBlock(rest[len(TP.If_Statement_End):], ASTc.Code_Block())
+            rest, trueCodeBlock = parseCodeBlock(rest[len(TP.If_Statement_End):], ASTc.Code_Block(nestLevel + 1), nestLevel+1)
             elseCodeBlock = None
             if checkForPattern(rest, TP.Else):
-                rest, elseCodeBlock = parseCodeBlock(rest[len(TP.Else):], ASTc.Code_Block())
-                codeBlock.append(ASTc.If_Statement(identifier, expression, trueCodeBlock))
-            codeBlock.append(ASTc.If_Statement(identifier, expression, trueCodeBlock, elseCodeBlock))
+                rest, elseCodeBlock = parseCodeBlock(rest[len(TP.Else):], ASTc.Code_Block(nestLevel + 1), nestLevel+1)
+                codeBlock.append(ASTc.If_Statement(nestLevel + 1, identifier, expression, trueCodeBlock))
+            codeBlock.append(ASTc.If_Statement(nestLevel + 1, identifier, expression, trueCodeBlock, elseCodeBlock))
         elif checkForPattern(rest, TP.Assignment_End):
-            codeBlock.append(ASTc.Variable_Assignment(identifier, expression))
+            codeBlock.append(ASTc.Variable_Assignment(nestLevel + 1, identifier, expression))
             rest = rest[len(TP.Assignment_End):]
         else:
             # ADD ERROR HANDLING
             unknownError(__file__)
-        return parseCodeBlock(rest, codeBlock)
+        return parseCodeBlock(rest, codeBlock, nestLevel)
     elif checkForPattern(tokens, TP.For_Loop_Opening):
-        rest, forLoop = parseForLoop(tokens, ASTc.For_Loop())
+        rest, forLoop = parseForLoop(tokens, ASTc.For_Loop(nestLevel + 1), nestLevel+1)
         codeBlock.append(forLoop)
-        return parseCodeBlock(rest, codeBlock)
+        return parseCodeBlock(rest, codeBlock, nestLevel)
     # ADD ERROR HANDLING
     print(token)
     unknownError(__file__)
 
-def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST]=[]) -> List[ASTc.AST]:
+def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : int) -> List[ASTc.AST]:
     if len(tokens) <= 0:
         return ASTs
-    # elif len(ASTs) <= 0:
-    #     ASTs.append(ASTc.AST())
     token, *rest = tokens
     if checkForPattern(tokens, TP.Function_Definition_Start):
         identifier = tokens[TP.Function_Definition_Start.index(Tokens.Identifier)]
-        tokens, parameterList = parseParameterList(rest[2:], ASTc.Parameter_List())
+        tokens, parameterList = parseParameterList(rest[2:], ASTc.Parameter_List(nestLevel + 1), nestLevel + 1)
         token, *rest = tokens
         if isinstance(token, Tokens.Endline):
-            ASTs.append(ASTc.AST(identifier, parameterList))
-            return parseNext(rest, ASTs)
+            ASTs.append(ASTc.AST(nestLevel, identifier, parameterList))
+            return parseNext(rest, ASTs, nestLevel)
         elif isinstance(token, Tokens.Code_Block_Open):
-            rest, codeBlock = parseCodeBlock(rest, ASTc.Code_Block())
-            ASTs.append(ASTc.AST(identifier, parameterList, codeBlock))
-            return parseNext(rest, ASTs)
+            rest, codeBlock = parseCodeBlock(rest, ASTc.Code_Block(nestLevel + 1), nestLevel + 1)
+            ASTs.append(ASTc.AST(nestLevel, identifier, parameterList, codeBlock))
+            return parseNext(rest, ASTs, nestLevel)
         else:
             print(f"Expected Endline or Code_Block_Open at {token.lineNr}, {token.charNr}. Got {type(token)}")
     else:
@@ -237,4 +235,4 @@ def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST]=[]) -> List[AST
         unknownError(__file__)
 
 def parse(tokens : List[Tokens.Token]) -> List[ASTc.AST]:
-    return parseNext(tokens)
+    return parseNext(tokens, [], 1)

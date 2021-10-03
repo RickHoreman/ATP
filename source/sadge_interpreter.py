@@ -14,6 +14,8 @@ for ast in ASTs:
 
 
 
-# TODO: make AST printing pretty (enough for debugging)
-# TODO: Add check to function call to make sure function exists
-# TODO: maybe the same thing for variables
+# Parser Todo:
+# TODO: Add check to function call to make sure function exists //Can also be runtime
+# TODO: maybe the same thing for variables //Can also be runtime
+# TODO: Add support for function calls in expressions
+# TODO: Add proper error handling

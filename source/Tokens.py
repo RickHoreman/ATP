@@ -20,7 +20,7 @@ class Boolean(Value):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with value {self.value}."
+        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with value {self.value}"
 
 class Integer(Value):
     # __innit__ :: Int -> Int -> Int -> None
@@ -30,7 +30,7 @@ class Integer(Value):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with value {self.value}."
+        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with value {self.value}"
 
 class Identifier(Value):
     # __innit__ :: Int -> Int -> String -> None
@@ -40,7 +40,7 @@ class Identifier(Value):
 
     # __str__ :: None -> String
     def __str__(self) -> str:
-        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with name {self.name}."
+        return f"{self.__class__.__name__} at Line {self.lineNr}, Char {self.charNr}, with name {self.name}"
 
 class Operator(Token):
     # __innit__ :: Int -> Int -> None
