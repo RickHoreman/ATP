@@ -1,5 +1,5 @@
 import Tokens
-from typing import Union
+from typing import Union, List
 from utilities import space
 
 class SimpleStatement:
@@ -42,15 +42,18 @@ class Code_Block(SimpleStatement):
 class Parameter_List():
     def __init__(self, nestLevel : int) -> None:
         self.nestLevel = nestLevel
-        self.identifiers = []
+        self.values = []
 
-    def append(self, identifier : Tokens.Identifier):
-        self.identifiers.append(identifier)
+    def append(self, value : Tokens.Value):
+        self.values.append(value)
+
+    def pop(self):
+        return self.values.pop()
 
     # __str__ :: None -> String
     def __str__(self) -> str:
         spacing = space(self.nestLevel)
-        statestr = ''.join(map(lambda st: "\n" + spacing + str(st), self.identifiers))
+        statestr = ''.join(map(lambda st: "\n" + spacing + str(st), self.values))
         return f"{self.__class__.__name__}" + statestr
 
 class If_Statement(SimpleStatement):

@@ -10,6 +10,7 @@ from Base_Token import Token
 class Value(Token):
     # __init__ :: Int -> Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
+        self.value = None
         super().__init__(lineNr, charNr)
 
 class Boolean(Value):

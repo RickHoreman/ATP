@@ -3,6 +3,7 @@ import Tokens
 import For_Loop_Tokens as FL_Tokens
 import KeywordCollections as KC
 from functools import reduce
+from utilities import zipWith
 # import sys
 # sys.setrecursionlimit(200000)
 
@@ -10,19 +11,6 @@ from functools import reduce
 def readFile(inputFilePath : str) -> str:
     with open(inputFilePath, "r", encoding="utf8") as inputFile:
         return inputFile.read() 
-
-A = TypeVar('A')
-B = TypeVar('B')
-C = TypeVar('C')
-# zipWith :: (a → b → c) → [a] → [b] → [c]
-def zipWith(f : Callable[[A, B], C], xs : List[A], ys : List[B]) -> List[C]:
-    if len(xs) == 0 or len(ys) == 0:
-        return [] # Stop when either list is empty
-    else:
-        x, *xrest = xs # Split head x of list xs
-        y, *yrest = ys # Split head y of list ys
-        return [f(x,y)] + zipWith(f, xrest, yrest) # Recursion:
-        # apply f to x and y, then concatenate to f applied to rest
 
 # listStartsWith :: List[String] -> List[String] -> Bool
 def listStartsWith(list1 : List[str], list2 : List[str]) -> bool:
