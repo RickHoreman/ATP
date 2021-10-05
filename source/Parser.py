@@ -199,6 +199,16 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nes
         else:
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
+    elif isinstance(token, Tokens.Print_Statement):
+        rest, returnItem = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
+        token, *rest = rest
+        if isinstance(token, Tokens.Endline):
+            codeBlock.append(ASTc.Print_Statement(nestLevel + 1, returnItem))
+            return parseCodeBlock(rest, codeBlock, nestLevel)
+        else:
+            print(token)
+            #TODO: ADD ERROR HANDLING
+            unknownError(__file__)
     elif checkForPattern(tokens, TP.Assignment_Or_If_Statement):
         identifier = token
         rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression(nestLevel + 1), nestLevel+1)

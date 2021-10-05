@@ -157,3 +157,8 @@ class Return_Statement(Token):
     # __innit__ :: Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
+
+class Print_Statement(Token):
+    # __innit__ :: Int -> Int -> None
+    def __init__(self, lineNr : int, charNr : int) -> None:
+        super().__init__(lineNr, charNr)

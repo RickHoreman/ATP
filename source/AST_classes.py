@@ -101,6 +101,16 @@ class Return_Statement(SimpleStatement):
         spacing = space(self.nestLevel)
         return f"{self.__class__.__name__}\n{spacing}Return Value: {str(self.expression)}"
 
+class Print_Statement(SimpleStatement):
+    def __init__(self, nestLevel : int, expression : Union[Expression, Function_Call]=None):
+        self.nestLevel = nestLevel
+        self.expression = expression
+
+    # __str__ :: None -> String
+    def __str__(self) -> str:
+        spacing = space(self.nestLevel)
+        return f"{self.__class__.__name__}\n{spacing}Expression: {str(self.expression)}"
+
 class For_Loop():
     def __init__(self, nestLevel : int, startingValue : Union[Expression, int]=None, comparisonOperator : Tokens.Logic_Operator=None, body : Code_Block=None, increment : Union[Expression, int]=None, controlValue : Expression=None) -> None:
         self.nestLevel = nestLevel

@@ -145,6 +145,12 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
     elif listStartsWith(input, "yeet"):
         tokens.append(Tokens.Return_Statement(lineNr, charNr))
         return lexNext(rest[3:], lineNr, charNr + 4, tokens)
+    elif listStartsWith(input, "yabe!"):
+        tokens.append(Tokens.Print_Statement(lineNr, charNr))
+        return lexNext(rest[4:], lineNr, charNr + 5, tokens)
+    elif listStartsWith(input, "yabe"):
+        tokens.append(Tokens.Print_Statement(lineNr, charNr))
+        return lexNext(rest[3:], lineNr, charNr + 4, tokens)
     elif listStartsWith(input, "え！？"):
         tokens.append(Tokens.Else(lineNr, charNr))
         return lexNext(rest[2:], lineNr, charNr + 3, tokens)
