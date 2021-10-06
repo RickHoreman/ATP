@@ -3,7 +3,7 @@ import AST_classes as ASTc
 from typing import List, Tuple, Union
 import Tokens
 import Token_Patterns as TP
-from utilities import unknownError, zipWith
+from utilities import unknownError, zipWith, timer
 from functools import reduce
 
 # checkForPattern :: List[Tokens.Token] -> List[Tokens.Token] -> Bool
@@ -256,7 +256,6 @@ def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : in
         unknownError(__file__)
 
 def compareIdentifierNames(id1 : Tokens.Identifier, id2 : Tokens.Identifier) -> bool:
-    print(f"id1: {str(id1)}\nid2: {str(id2)}")
     return id1.name == id2.name
 
 def compareParameterList(list1 : ASTc.Parameter_List, list2 : ASTc.Parameter_List) -> bool:
@@ -294,6 +293,7 @@ def checkForMissingImplementations(ASTs : List[ASTc.AST], ASTsWithImplementation
         ASTsWithImplementations.append(ast)
         return checkForMissingImplementations(rest, ASTsWithImplementations)
 
+@timer
 def parse(tokens : List[Tokens.Token]) -> List[ASTc.AST]:
     ASTs = parseNext(tokens, [], 1)
     # print(f"Constructed {len(ASTs)} ASTs.\n")

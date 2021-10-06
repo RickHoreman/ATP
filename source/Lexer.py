@@ -3,7 +3,7 @@ import Tokens
 import For_Loop_Tokens as FL_Tokens
 import KeywordCollections as KC
 from functools import reduce
-from utilities import zipWith
+from utilities import zipWith, timer
 # import sys
 # sys.setrecursionlimit(200000)
 
@@ -195,6 +195,7 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
     return lexNext(rest, lineNr, charNr + 1, tokens)
 
 # lex :: String -> List[Token]
+@timer
 def lex(inputFilePath : str) -> List[Tokens.Token]:
     input = readFile(inputFilePath)
     return lexNext(list(input), 1, 1, [])

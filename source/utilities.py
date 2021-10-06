@@ -1,6 +1,8 @@
 from typing import Callable, List, TypeVar
 import inspect
 from KeywordCollections import honorifics
+from functools import wraps
+import time
 
 # unkownError :: String -> None
 def unknownError(filename : str):
@@ -48,3 +50,12 @@ def stripHonorificRecursion(input : str, honorific : str) -> str:
         return input[:len(input)-len(honorific)]
     else:
         return stripHonorificRecursion(input, honorific[1:])
+
+def timer(f):
+    @wraps(f)
+    def inner(*args, **kwargs):
+        inner.time = time.time()
+        result = f(*args, **kwargs)
+        inner.time = time.time() - inner.time
+        return result
+    return inner

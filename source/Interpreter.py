@@ -1,9 +1,9 @@
 from inspect import getargvalues, getclosurevars
 import AST_classes as ASTc
-from typing import List, Tuple, Union, TypeVar
+from typing import List, Union, TypeVar
 import Tokens
 import Token_Patterns as TP
-from utilities import unknownError, find, stripHonorific
+from utilities import unknownError, find, stripHonorific, timer
 from copy import deepcopy
 
 class Program_State():
@@ -207,6 +207,7 @@ def runAST(programState : Program_State, ast : ASTc.AST, parameterList : ASTc.Pa
         unknownError(__file__)
 
 A = TypeVar('A')
+@timer
 def run(ASTs : List[ASTc.AST], arguments : List) -> A:
     programState = Program_State(ASTs)
     sadgeIndex = find(lambda ast, name: stripHonorific(ast.identifier.name) == name, ASTs, "sadge")
