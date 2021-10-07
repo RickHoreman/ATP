@@ -3,21 +3,21 @@ import Tokens
 import For_Loop_Tokens as FL_Tokens
 import KeywordCollections as KC
 from functools import reduce
-from utilities import zipWith, timer
-# import sys
-# sys.setrecursionlimit(200000)
+from utilities import zipWith, timer, unknownError
 
 # readFile :: String -> String
 def readFile(inputFilePath : str) -> str:
-    with open(inputFilePath, "r", encoding="utf8") as inputFile:
+    with open(inputFilePath, "r", encoding="utf8") as inputFile: # utf8 encoding is required for the hiraga, kanji, etc.
         return inputFile.read() 
 
 # listStartsWith :: List[String] -> List[String] -> Bool
 def listStartsWith(list1 : List[str], list2 : List[str]) -> bool:
+    '''Returns True if the first list starts with, and fully contains, the second.'''
     return reduce(lambda bool1, bool2: bool1 and bool2, zipWith(lambda char1, char2: char1 == char2, list1, list2), True)
 
 # findMapped :: List[String] -> List[String] -> Bool -> List[String] -> List[String] -> Int -> Int
 def findMapped(f : Callable[[List[str], List[str]], bool], list1 : List[str], list2 : List[str], depth : int=0) -> int:
+    '''Returns the index where the function first evaluated to true. The function is called for every item in list2 as f(list1, item).'''
     if len(list2) <= 0:
         return -1
     head, *tail = list2
@@ -28,63 +28,69 @@ def findMapped(f : Callable[[List[str], List[str]], bool], list1 : List[str], li
 
 # lexNext :: List[Char] -> Int -> Int -> List[Token] -> String -> Int -> List[Token]
 def lexInt(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token], number : str='', value : int=0) -> List[Tokens.Token]:
+    '''Returns the token list with a new fully lexed int appended, or ends on an error. The README contains more information about how ints work in sadge.'''
     if len(input) <= 0:
-        if KC.integers[number[-1]] in range(1,10):
+        if KC.integers[number[-1]] in range(1,10): # If the last character was a normal number (1-9) we still need to add it our total
             tokens.append(Tokens.Integer(lineNr, charNr-len(number), value + KC.integers[number[-1]]))
-        else:
+        else:   # If it was one of the magnifier (10, 100, 1000, etc) we've already got the correct total, so we just make the token as is
             tokens.append(Tokens.Integer(lineNr, charNr-len(number), value))
         return tokens
     char, *rest = input
-    # ADD \n HANDLING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if char not in KC.integers:
-        if KC.integers[number[-1]] in range(1,10):
+    if char == '\n':
+        # newline in number error
+        #TODO: ADD ERROR HANDLING
+        unknownError(__file__)
+    if char not in KC.integers: # The character is no longer (part of) a number, so we want to end our lexing
+        if KC.integers[number[-1]] in range(1,10): # If the last character was a normal number (1-9) we still need to add it our total
             tokens.append(Tokens.Integer(lineNr, charNr-len(number), value + KC.integers[number[-1]]))
             return lexNext(input, lineNr, charNr, tokens)
-        else:
+        else: # If it was one of the magnifier (10, 100, 1000, etc) we've already got the correct total, so we just make the token as is
             tokens.append(Tokens.Integer(lineNr, charNr-len(number), value))
             return lexNext(input, lineNr, charNr, tokens)
     else:
-        n = KC.integers[char]
-        if n in range(1,10):
-            if len(number)<=0:
+        n = KC.integers[char] # Grab the value of the char
+        if n in range(1,10): # If its a normal number (1-9)
+            if len(number)<=0: # If its the first digit we just add the char to our number string so we can potentially multiply it by a magnifier next loop, or add it to the value if there is no multiplier
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value)
-            elif KC.integers[number[-1]] in range(1,10):
+            elif KC.integers[number[-1]] in range(1,10): # If the previous was also a normal number thats an error.
                 print(f"[Lexer] Syntax Error: Number attached to other number without spacing at line {lineNr}, char {charNr}.")
                 tokens.append(Tokens.Integer(lineNr, charNr-len(number), value + KC.integers[number[-1]]))
                 return lexNext(input, lineNr, charNr, tokens)
-            else:
+            else: # If the previous was a magnifier we just add the char to our number string so we can potentially multiply it by a magnifier next loop, or add it to the value if there is no multiplier
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value)
-        else:
-            if len(number)<=0:
+        else: # Char must be a magnifier
+            if len(number)<=0: # If its the first digit we add it to the value and continue lexing
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value + n)
-            elif KC.integers[number[-1]] in range(1,10):
+            elif KC.integers[number[-1]] in range(1,10): # If the previous was a normal number, we multiply the two so as to apply the magnification
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value + (n * KC.integers[number[-1]]))
-            else:
+            else: # If the previous was also a magnifier, we add it to the value and continue lexing
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value + n)
 
 # lexNext :: List[Char] -> Int -> Int -> List[Token] -> String -> List[Token]
 def lexIdentifier(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token], name : str='') -> List[Tokens.Token]:
-    if len(input) <= 0:
+    '''Returns the token list with a fully lexed identifier appended. Keeps going until it finds an honorific.'''
+    if len(input) <= 0: # If the file ends mid-identifier thats an error
         print(f"[Lexer] Unexpected end of file at line {lineNr}, char {charNr}.")
         return tokens
     char, *rest = input
-    if char == '\n':
+    if char == '\n': # Ignore \n
         return lexIdentifier(rest, lineNr + 1, 1, tokens, name)
     else:
-        index = findMapped(listStartsWith, input, KC.honorifics)
-        if index >= 0:
-            tokens.append(Tokens.Identifier(lineNr, charNr-len(name), name + KC.honorifics[index]))
+        index = findMapped(listStartsWith, input, KC.honorifics) # Find the honorific
+        if index >= 0: # If an honorific was found
+            tokens.append(Tokens.Identifier(lineNr, charNr-len(name), name + KC.honorifics[index])) # Make identifier token with the lexed name + the identifier, the charNr we want is the start of the identifier, thats why we charNr-len(name).
             return lexNext(rest[len(KC.honorifics[index])-1:], lineNr, charNr+len(KC.honorifics[index]), tokens)
-    return lexIdentifier(rest, lineNr, charNr + 1, tokens, name + char)        
+    return lexIdentifier(rest, lineNr, charNr + 1, tokens, name + char) # Add char to name and keep going    
 
 # lexNext :: List[Char] -> Int -> Int -> List[Token] -> List[Token]
 def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token]) -> List[Tokens.Token]:
+    '''Returns the fully lexed result of input. Pass both lineNr and charNr as 1 initially.'''
     if len(input) <= 0:
         return tokens
     char, *rest = input
-    if char == '\n':
-        return lexNext(rest, lineNr + 1, 1, tokens)
-    elif char == ' ':
+    if char == '\n':                                # We look at all the single character tokens first.
+        return lexNext(rest, lineNr + 1, 1, tokens) # These could also be done with the method for longer
+    elif char == ' ': # Ignore spaces               # tokens, which would make them easier to change.
         pass
     elif char == '〇':
         tokens.append(Tokens.Integer(lineNr, charNr, 0))
@@ -108,8 +114,8 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
         tokens.append(Tokens.Expression_Bracket_Open(lineNr, charNr))
     elif char == '】':
         tokens.append(Tokens.Expression_Bracket_Close(lineNr, charNr))
-    elif listStartsWith(input, ">="):
-        tokens.append(Tokens.Greater_Than_Or_Equal(lineNr, charNr))
+    elif listStartsWith(input, ">="):                                   # This is where we start looking at the longer tokens.
+        tokens.append(Tokens.Greater_Than_Or_Equal(lineNr, charNr))     # We simply append the one we find and then keep going after.
         return lexNext(rest[1:], lineNr, charNr + 2, tokens)
     elif listStartsWith(input, "<="):
         tokens.append(Tokens.Smaller_Than_Or_Equal(lineNr, charNr))
@@ -191,11 +197,12 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
         tokens.append(FL_Tokens.For_Loop_End(lineNr, charNr))
         return lexNext(rest[10:], lineNr, charNr + 11, tokens)
     else:
-        return lexIdentifier(input, lineNr, charNr, tokens)
-    return lexNext(rest, lineNr, charNr + 1, tokens)
+        return lexIdentifier(input, lineNr, charNr, tokens) # If it's not any preset token, it must be an identifier!
+    return lexNext(rest, lineNr, charNr + 1, tokens) # Default continue for single char
 
 # lex :: String -> List[Token]
 @timer
 def lex(inputFilePath : str) -> List[Tokens.Token]:
+    '''Returns the result of lexing the input file, or stops at an error.'''
     input = readFile(inputFilePath)
     return lexNext(list(input), 1, 1, [])
