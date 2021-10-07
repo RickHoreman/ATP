@@ -156,10 +156,10 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel
         unknownError(__file__) # Some unexpected syntax
     elif forLoop.increment == None: # If our for loop doesnt have an incrementer yet, parse it!
         if checkForPattern(tokens, TP.For_Loop_Default_Increment):
-            forLoop.increment = 1
-            return parseForLoop(tokens[len(TP.For_Loop_Default_Increment):], forLoop, nestLevel)
-        elif checkForPattern(tokens, TP.For_Loop_Default_Decrement):
-            forLoop.increment = -1
+            forLoop.increment = 1                                                                   # Check for the various options:
+            return parseForLoop(tokens[len(TP.For_Loop_Default_Increment):], forLoop, nestLevel)    # Default increment (+1)
+        elif checkForPattern(tokens, TP.For_Loop_Default_Decrement):                                # Default decrement (-1)
+            forLoop.increment = -1                                                                  # Or any custom value.
             return parseForLoop(tokens[len(TP.For_Loop_Default_Decrement):], forLoop, nestLevel)
         elif checkForPattern(tokens, TP.For_Loop_Increment_Definition):
             rest, expression = parseExpression(tokens[len(TP.For_Loop_Increment_Definition):], ASTc.Expression(nestLevel + 1), nestLevel+1)
@@ -179,32 +179,33 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel
     unknownError(__file__) # Some unexpected syntax
 
 def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
-    if len(tokens) <= 0:
+    '''Returns a tuple of the rest of the token list and a parsed code block.'''
+    if len(tokens) <= 0: # Premature end of token list.
         #TODO: ADD ERROR HANDLING
         unknownError(__file__)
     token, *rest = tokens
-    if isinstance(token, Tokens.Code_Block_Close):
+    if isinstance(token, Tokens.Code_Block_Close): # End of code block.
         return rest, codeBlock
-    elif checkForPattern(tokens, TP.Function_Call):
+    elif checkForPattern(tokens, TP.Function_Call): # Check for function call and parse if found.
         rest, functionCall = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(nestLevel + 1, tokens[TP.Function_Call.index(Tokens.Identifier)]), nestLevel+1)
         token, *rest = rest
-        if isinstance(token, Tokens.Endline):
-            codeBlock.append(functionCall)
+        if isinstance(token, Tokens.Endline): # Check if the line was endend properly, we expect an endline after a function call and some other statements.
+            codeBlock.append(functionCall)  # Add the object to our code block, which is essentially a list.
             return parseCodeBlock(rest, codeBlock, nestLevel)
         else:
             # Missing endline error
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
-    elif isinstance(token, Tokens.Return_Statement):
+    elif isinstance(token, Tokens.Return_Statement): # Parse return statement
         rest, returnItem = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
         token, *rest = rest
         if isinstance(token, Tokens.Endline):
             codeBlock.append(ASTc.Return_Statement(nestLevel + 1, returnItem))
-            return parseCodeBlock(rest, codeBlock, nestLevel)
+            return parseCodeBlock(rest, codeBlock, nestLevel) # Keep going because you can technically still have more code after a return, even though you'll almost certainly never get there ¯\_(ツ)_/¯ (for optimisation this code could just note be parsed at all, because it wont be used anyways.)
         else:
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
-    elif isinstance(token, Tokens.Print_Statement):
+    elif isinstance(token, Tokens.Print_Statement): # Parse print statement, print statement can contain any expression, and only that.
         rest, returnItem = parseExpression(rest, ASTc.Expression(nestLevel + 1), nestLevel+1)
         token, *rest = rest
         if isinstance(token, Tokens.Endline):
@@ -214,24 +215,25 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nes
             print(token)
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
-    elif checkForPattern(tokens, TP.Assignment_Or_If_Statement):
-        identifier = token
+    elif checkForPattern(tokens, TP.Assignment_Or_If_Statement): # Assigments and if statements start the same way.
+        identifier = token  # We want to parse the expresion either way, seeing as both would contain one.
         rest, expression = parseExpression(tokens[len(TP.Assignment_Or_If_Statement):], ASTc.Expression(nestLevel + 1), nestLevel+1)
-        if checkForPattern(rest, TP.If_Statement_End):
+        if checkForPattern(rest, TP.If_Statement_End): # Then we check if it specifically is an if statement.
             rest, trueCodeBlock = parseCodeBlock(rest[len(TP.If_Statement_End):], ASTc.Code_Block(nestLevel + 2), nestLevel+2)
-            elseCodeBlock = None
-            if checkForPattern(rest, TP.Else):
+            elseCodeBlock = None # There doesnt have to be an else code block.
+            if checkForPattern(rest, TP.Else): # But if we have an else pattern, there sure is.
                 rest, elseCodeBlock = parseCodeBlock(rest[len(TP.Else):], ASTc.Code_Block(nestLevel + 2), nestLevel+2)
             codeBlock.append(ASTc.If_Statement(nestLevel + 1, identifier, expression, trueCodeBlock, elseCodeBlock))
-        elif checkForPattern(rest, TP.Assignment_End):
+        elif checkForPattern(rest, TP.Assignment_End): # Or it can be an assignment.
             codeBlock.append(ASTc.Variable_Assignment(nestLevel + 1, identifier, expression))
             rest = rest[len(TP.Assignment_End):]
         else:
+            # Neither an if statement or an assignment, syntax error.
             #TODO: ADD ERROR HANDLING
             print(expression)
             unknownError(__file__)
         return parseCodeBlock(rest, codeBlock, nestLevel)
-    elif checkForPattern(tokens, TP.For_Loop_Opening):
+    elif checkForPattern(tokens, TP.For_Loop_Opening): # Parse for loop, has it's own function because it's... complicated.
         rest, forLoop = parseForLoop(tokens, ASTc.For_Loop(nestLevel + 1), nestLevel+1)
         codeBlock.append(forLoop)
         return parseCodeBlock(rest, codeBlock, nestLevel)
@@ -240,17 +242,18 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nes
     unknownError(__file__)
 
 def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : int) -> List[ASTc.AST]:
-    if len(tokens) <= 0:
+    '''Returns a list of ASTs, each containing one function.'''
+    if len(tokens) <= 0: # This means we've properly reached the end of our file, so we return our resulting ASTs.
         return ASTs
     token, *rest = tokens
-    if checkForPattern(tokens, TP.Function_Definition_Start):
+    if checkForPattern(tokens, TP.Function_Definition_Start): # A function definition, meaning we want to start building a new AST.
         identifier = tokens[TP.Function_Definition_Start.index(Tokens.Identifier)]
         tokens, parameterList = parseParameterList(rest[2:], ASTc.Parameter_List(nestLevel + 1), nestLevel + 1)
         token, *rest = tokens
-        if isinstance(token, Tokens.Endline):
+        if isinstance(token, Tokens.Endline): # This means it's only a definition, no implementation.
             ASTs.append(ASTc.AST(nestLevel, identifier, parameterList))
             return parseNext(rest, ASTs, nestLevel)
-        elif isinstance(token, Tokens.Code_Block_Open):
+        elif isinstance(token, Tokens.Code_Block_Open): # This means the function actually has an implementation (code block) right then and there.
             rest, codeBlock = parseCodeBlock(rest, ASTc.Code_Block(nestLevel + 1), nestLevel + 1)
             ASTs.append(ASTc.AST(nestLevel, identifier, parameterList, codeBlock))
             return parseNext(rest, ASTs, nestLevel)
@@ -261,19 +264,22 @@ def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : in
         unknownError(__file__)
 
 def compareIdentifierNames(id1 : Tokens.Identifier, id2 : Tokens.Identifier) -> bool:
+    '''Returns true if the names of both identifiers are identical.'''
     return id1.name == id2.name
 
 def compareParameterList(list1 : ASTc.Parameter_List, list2 : ASTc.Parameter_List) -> bool:
+    '''Returns true if the parameter lists match.'''
     if len(list1.values) != len(list2.values):
         return False
     else:
         return reduce(lambda bool1, bool2: bool1 and bool2, zipWith(compareIdentifierNames, list1.values, list2.values), True)
 
 def squashASTList(ASTs : List[ASTc.AST], namesFound : dict[str, int]=dict(), squashedASTList : List[ASTc.AST]=[]) -> List[ASTc.AST]:
-    if len(ASTs) <= 0:
-        return squashedASTList
-    ast, *rest = ASTs
-    if ast.identifier.name in namesFound:
+    '''Returns a squashed version of the input AST list. Essentially merging seperate function definitions and implementations.'''
+    if len(ASTs) <= 0:                      # We keep at dict of the names we have come across, with their index in the squashedASTList.
+        return squashedASTList              # This dict can be checked to see if the current function was already defined.
+    ast, *rest = ASTs                       # If so, we want to make sure the parameters match too.
+    if ast.identifier.name in namesFound:   # Then if the earlier occurance has no code block (it was definition only), we add the code block of the current function to the earlier occurance.
         if compareParameterList(squashedASTList[namesFound[ast.identifier.name]].parameterList, ast.parameterList):
             if squashedASTList[namesFound[ast.identifier.name]].codeBlock == None:
                 squashedASTList[namesFound[ast.identifier.name]].codeBlock = ast.codeBlock
@@ -287,10 +293,11 @@ def squashASTList(ASTs : List[ASTc.AST], namesFound : dict[str, int]=dict(), squ
     return squashASTList(rest, namesFound, squashedASTList)
 
 def checkForMissingImplementations(ASTs : List[ASTc.AST], ASTsWithImplementations : List[ASTc.AST]=[]) -> List[ASTc.AST]:
+    '''Checks if any of the input ASTs in the list have no implementation (no code block). If so, throws error.'''
     if len(ASTs) <= 0:
         return ASTsWithImplementations
     ast, *rest = ASTs
-    if ast.codeBlock == None:
+    if ast.codeBlock == None: # If the code block is undefined, thats an error.
         # missing implementation error
         #TODO: ADD ERROR HANDLING
         unknownError(__file__)
@@ -300,10 +307,8 @@ def checkForMissingImplementations(ASTs : List[ASTc.AST], ASTsWithImplementation
 
 @timer
 def parse(tokens : List[Tokens.Token]) -> List[ASTc.AST]:
-    ASTs = parseNext(tokens, [], 1)
-    # print(f"Constructed {len(ASTs)} ASTs.\n")
-    # for ast in ASTs:
-    #     print(ast)
-    ASTs = squashASTList(ASTs)
-    ASTs = checkForMissingImplementations(ASTs)
+    '''Interface function for the parser. Takes token list, parses, does some checks, and then returns a list of ASTs, each containing one function. Has a .time attribute containing the time it took to run the function.'''
+    ASTs = parseNext(tokens, [], 1)             # Parse it!
+    ASTs = squashASTList(ASTs)                  # Squash it!
+    ASTs = checkForMissingImplementations(ASTs) # -B̶o̶p̶ ̶i̶t̶  Check it for missing implementations!
     return ASTs

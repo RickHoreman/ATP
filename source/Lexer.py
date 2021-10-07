@@ -203,6 +203,6 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
 # lex :: String -> List[Token]
 @timer
 def lex(inputFilePath : str) -> List[Tokens.Token]:
-    '''Returns the result of lexing the input file, or stops at an error.'''
+    '''Returns the result of lexing the input file, or stops at an error. Has a .time attribute containing the time it took to run the function.'''
     input = readFile(inputFilePath)
     return lexNext(list(input), 1, 1, [])
