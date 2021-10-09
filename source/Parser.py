@@ -6,7 +6,7 @@ import Token_Patterns as TP
 from utilities import unknownError, zipWith, timer
 from functools import reduce
 
-# checkForPattern :: List[Tokens.Token] -> List[Tokens.Token] -> Bool
+# checkForPattern :: [Tokens.Token] -> [Tokens.Token] -> Boolean
 def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]) -> bool:
     '''Returns true if the first list starts with the entirety of the second. Returns false if the first list runs out or if a mismatch occurs.'''
     if len(pattern) <= 0: # In this case the entire pattern matched, so we return true.
@@ -20,7 +20,7 @@ def checkForPattern(instances : List[Tokens.Token], pattern : List[Tokens.Token]
     else:
         return checkForPattern(instancesRest, patternRest) # Match next items.
 
-# parseParameterList :: List[Tokens.Token] -> ASTc.Parameter_List -> Int ->Tuple[, List[Tokens.Token], ASTc.Parameter_List]
+# parseParameterList :: [Tokens.Token] -> ASTc.Parameter_List -> Integer -> ([Tokens.Token], ASTc.Parameter_List)
 def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Parameter_List, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Parameter_List]:
     '''Returns a tuple of the rest of the token list and a parsed parameter list. Used for parsing parameter lists on function definitions, not calls.'''
     if len(tokens) <= 0:    # We dont expect our token list to stop mid parameter list.
@@ -39,6 +39,7 @@ def parseParameterList(tokens : List[Tokens.Token], parameterList : ASTc.Paramet
         #TODO: ADD ERROR HANDLING
         unknownError(__file__)
 
+# parseExpression :: [Tokens.Token] -> ASTc.Expression -> Integer -> ([Tokens.Token], ASTc.Expression | Tokens.Value)
 def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression, nestLevel : int) -> Tuple[List[Tokens.Token], Union[ASTc.Expression, Tokens.Value]]:
     '''Returns a tuple of the rest of the token list and a parsed expression (which can be just a value).'''
     if len(tokens) <= 0:    # We dont expect our token list to run out mid expression.
@@ -90,6 +91,7 @@ def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression, n
         else: # Otherwise, simply return our parsed expression and the tokens that come after.
             return tokens, expression
 
+# parseFunctionCall :: [Tokens.Token] -> ASTc.Function_Call -> Integer -> ([Tokens.Token], ASTc.Function_Call)
 def parseFunctionCall(tokens : List[Tokens.Token], functionCall : ASTc.Function_Call, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Function_Call]:
     '''Returns a tuple of the rest of the token list and a parsed functioncall.'''
     if len(tokens) <= 0: # We dont expect our token list to run out mid function call.
@@ -118,6 +120,7 @@ def parseFunctionCall(tokens : List[Tokens.Token], functionCall : ASTc.Function_
         #TODO: ADD ERROR HANDLING
         unknownError(__file__)
 
+# parseForLoop :: [Tokens.Token] -> ASTc.For_Loop -> Integer -> ([Tokens.Token], ASTc.For_Loop)
 def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.For_Loop]:
     '''Returns a tuple of the rest of the token list and a parsed for loop.'''
     if len(tokens) <= 0: # We dont expect our token list to run out mid for loop.
@@ -178,6 +181,7 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel
     #TODO: ADD ERROR HANDLING
     unknownError(__file__) # Some unexpected syntax
 
+# parseCodeBlock :: [Tokens.Token] -> ASTc.Code_Block -> Integer -> ([Tokens.Token], ASTc.Code_Block)
 def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nestLevel : int) -> Tuple[List[Tokens.Token], ASTc.Code_Block]:
     '''Returns a tuple of the rest of the token list and a parsed code block.'''
     if len(tokens) <= 0: # Premature end of token list.
@@ -241,6 +245,7 @@ def parseCodeBlock(tokens : List[Tokens.Token], codeBlock : ASTc.Code_Block, nes
     print(token)
     unknownError(__file__)
 
+# parseNext :: [Tokens.Token] -> [ASTc.AST] -> Integer -> [ASTc.AST]
 def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : int) -> List[ASTc.AST]:
     '''Returns a list of ASTs, each containing one function.'''
     if len(tokens) <= 0: # This means we've properly reached the end of our file, so we return our resulting ASTs.
@@ -263,10 +268,12 @@ def parseNext(tokens : List[Tokens.Token], ASTs : List[ASTc.AST], nestLevel : in
         #TODO: ADD ERROR HANDLING
         unknownError(__file__)
 
+# compareIdentifierNames :: Tokens.Identifier -> Tokens.Identifier -> Boolean
 def compareIdentifierNames(id1 : Tokens.Identifier, id2 : Tokens.Identifier) -> bool:
     '''Returns true if the names of both identifiers are identical.'''
     return id1.name == id2.name
 
+# compareParameterList :: ASTc.Parameter_List -> ASTc.Parameter_List -> Boolean
 def compareParameterList(list1 : ASTc.Parameter_List, list2 : ASTc.Parameter_List) -> bool:
     '''Returns true if the parameter lists match.'''
     if len(list1.values) != len(list2.values):
@@ -274,6 +281,7 @@ def compareParameterList(list1 : ASTc.Parameter_List, list2 : ASTc.Parameter_Lis
     else:
         return reduce(lambda bool1, bool2: bool1 and bool2, zipWith(compareIdentifierNames, list1.values, list2.values), True)
 
+# squashASTList :: [ASTc.AST] -> Dict((String, Integer)) -> [ASTc.AST] -> [ASTc.AST]
 def squashASTList(ASTs : List[ASTc.AST], namesFound : dict[str, int]=dict(), squashedASTList : List[ASTc.AST]=[]) -> List[ASTc.AST]:
     '''Returns a squashed version of the input AST list. Essentially merging seperate function definitions and implementations.'''
     if len(ASTs) <= 0:                      # We keep at dict of the names we have come across, with their index in the squashedASTList.
@@ -292,6 +300,7 @@ def squashASTList(ASTs : List[ASTc.AST], namesFound : dict[str, int]=dict(), squ
     squashedASTList.append(ast)
     return squashASTList(rest, namesFound, squashedASTList)
 
+# checkForMissingImplementations :: [ASTc.AST] -> [ASTc.AST] -> [ASTc.AST]
 def checkForMissingImplementations(ASTs : List[ASTc.AST], ASTsWithImplementations : List[ASTc.AST]=[]) -> List[ASTc.AST]:
     '''Checks if any of the input ASTs in the list have no implementation (no code block). If so, throws error.'''
     if len(ASTs) <= 0:
@@ -305,6 +314,7 @@ def checkForMissingImplementations(ASTs : List[ASTc.AST], ASTsWithImplementation
         ASTsWithImplementations.append(ast)
         return checkForMissingImplementations(rest, ASTsWithImplementations)
 
+# parse :: [Tokens.Token] -> [ASTc.AST]
 @timer
 def parse(tokens : List[Tokens.Token]) -> List[ASTc.AST]:
     '''Interface function for the parser. Takes token list, parses, does some checks, and then returns a list of ASTs, each containing one function. Has a .time attribute containing the time it took to run the function.'''

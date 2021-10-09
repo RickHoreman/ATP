@@ -8,18 +8,21 @@ from copy import deepcopy
 
 class Program_State():
     '''A datatype capable of containing scopes for (recursive!) function calls.'''
+    # In Diederik's voorbeeld hebben __init__ functies geen haskall typing, dus ik neem aan dat dat niet hoeft.
     def __init__(self, ASTs : List[ASTc.AST]):                          # The structure of the scope container is as follows:
         self.ASTs = ASTs                                                # A dictionary, the name of the scope/AST/function as the key,
         self.scopes = dict() # dict(str, List[dict(str, Tokens.Value)]) # and a list as value. This is like a little stack, every time
         self.currentScope = None                                        # we need a new scope with a name that already exists, we add
                                                                         # a new dictiory to this list, and remove it once we leave the scope.
-    def addScope(self, identifier : Tokens.Identifier) -> None:         # This deepest dictionary simply contains variableName;value pairs.
+    # addScope :: Program_State -> Tokens.Identifier -> Program_State   # This deepest dictionary simply contains variableName;value pairs.
+    def addScope(self, identifier : Tokens.Identifier) -> None:         
         '''Operator for adding a new scope to the program state.'''
         if identifier.name not in self.scopes: # If no scope exists under that name yet,
             self.scopes[identifier.name] = [dict()] # add it with a list containing one dict as value.
         else:
             self.scopes[identifier.name].append(dict()) # Otherwise, add a new dict to the respective list.
 
+    # popScope :: Program_State -> Tokens.Identifier -> Program_State
     def popScope(self, identifier : Tokens.Identifier) -> None:
         '''Operator for popping a scope from the program state. Scope is not actually returned.'''
         if identifier.name in self.scopes:
@@ -28,10 +31,12 @@ class Program_State():
             else:
                 self.scopes.pop(identifier.name) # Otherwise remove the entire dictionary entry.
 
+    # popCurrentScope :: Program_State -> Program_State
     def popCurrentScope(self) -> None:
         '''Operator for popping the current scope. Scope is not actually returned.'''
         self.popScope(self.currentScope)
 
+    # setVariable :: Program_State -> Tokens.Identifier -> Tokens.Value -> Program_State
     def setVariable(self, identifier : Tokens.Identifier, value : Tokens.Value):
         '''Operator for setting a variable in the program state. This can be a brand new variable or overwriting an existing one.'''
         if self.currentScope != None:
@@ -41,6 +46,7 @@ class Program_State():
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
 
+    # Program_State -> Tokens.Identifier -> (Program_State, Tokens.Value)
     def getValue(self, identifier : Tokens.Identifier) -> Tokens.Value:
         '''Operator for getting the value of a variable. Throws error if the variable doesn't exist.'''
         if self.currentScope != None:
@@ -62,6 +68,7 @@ class Program_State():
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
 
+# initParameters :: Program_State -> ASTc.Parameter_List -> ASTc.Parameter_List -> Program_State
 def initParameters(programState : Program_State, identifierList : ASTc.Parameter_List, valueList : ASTc.Parameter_List) -> Program_State:
     '''Initialises the entries in the identifier- and valueList as variables in the program state. Returns the new program state.'''
     if len(identifierList.values) <= 0 or len(valueList.values) <= 0:
@@ -72,6 +79,7 @@ def initParameters(programState : Program_State, identifierList : ASTc.Parameter
     return initParameters(programState, identifierList, valueList)
 
 A = TypeVar('A')
+# runFunctionCall :: Program_State -> ASTc.Function_Call -> A
 def runFunctionCall(programState : Program_State, functionCall : ASTc.Function_Call) -> A:
     '''Run the given function call using the program state. Returns the result of the function call.'''
     functionIndex = find(lambda ast, name: ast.identifier.name == name, programState.ASTs, functionCall.identifier.name)
@@ -83,6 +91,7 @@ def runFunctionCall(programState : Program_State, functionCall : ASTc.Function_C
         unknownError(__file__)
 
 A = TypeVar('A')
+# solve :: Tokens.Value | Integer | Boolean -> Tokens.Operator -> Tokens.value | Integer | Boolean -> A
 def solve(left : Union[Tokens.Value, int, bool], operator : Tokens.Operator, right : Union[Tokens.Value, int, bool]) -> A:
     '''Solves any "single-depth" expression. Returns the result of the expression.'''
     if isinstance(left, Tokens.Value):
@@ -103,7 +112,8 @@ def solve(left : Union[Tokens.Value, int, bool], operator : Tokens.Operator, rig
         return left < right
 
 A = TypeVar('A')
-def solveExpression(programState : Program_State, expression : Union[ASTc.Expression, Tokens.Integer, Tokens.Boolean]) -> A:
+# solveExpression :: Program_State -> ASTc.Expression | Tokens.Identifier | Tokens.Integer | Tokens.Boolean | ASTc.Function_Call | Integer | Boolean -> A
+def solveExpression(programState : Program_State, expression : Union[ASTc.Expression, Tokens.Identifier, Tokens.Integer, Tokens.Boolean, ASTc.Function_Call, int, bool]) -> A:
     '''Solves any expression, including recursive expressions (expression in expression in expression...) and function calls. Returns the result of the expression.'''
     if isinstance(expression, Tokens.Identifier):                                           # It can occur than expression was already just
         return programState.getValue(expression)                                            # a single value during parsing. In these cases
@@ -136,6 +146,7 @@ def solveExpression(programState : Program_State, expression : Union[ASTc.Expres
     #TODO: ADD ERROR HANDLING
     unknownError(__file__)
 
+# solveParameterList :: -> Program_State -> ASTc.Parameter_List -> ASTc.Parameter_List -> ASTc.Parameter_List
 def solveParameterList(programState : Program_State, parameterList : ASTc.Parameter_List, solvedParameterList : ASTc.Parameter_List) -> ASTc.Parameter_List:
     '''This goes through all parameters in a function call's parameter list and solves any expressions it contains. Returns the "solved" parameter list.'''
     if len(parameterList.values) <= 0:
@@ -145,6 +156,7 @@ def solveParameterList(programState : Program_State, parameterList : ASTc.Parame
     return solveParameterList(programState, parameterList, solvedParameterList)
 
 A = TypeVar('A')
+# runForLoop :: Program_State -> ASTc.For_Loop -> A
 def runForLoop(programState : Program_State, forLoop : ASTc.For_Loop) -> A:
     '''Runs a for loop and returns it's result, if any.'''
     if solve(programState.getValue(Tokens.Identifier(-1,-1, "Crabsさん")), forLoop.comparisonOperator, forLoop.controlValue):
@@ -157,6 +169,7 @@ def runForLoop(programState : Program_State, forLoop : ASTc.For_Loop) -> A:
         return runForLoop(programState, forLoop) # Otherwise, increment our incrementer and loop again.
 
 A = TypeVar('A')
+# runCodeBlock :: Program_State -> ASTc.Code_Block -> Integer -> A
 def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, progress : int=0) -> A:
     '''Runs a code block and returns its result, or None if we reach the end of the block.'''
     if progress >= len(codeBlock.code): # End of block reached.
@@ -191,6 +204,7 @@ def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, prog
     return runCodeBlock(programState, codeBlock, progress)
 
 A = TypeVar('A')
+# runAST :: Program_State -> ASTc.AST -> ASTc.Parameter_List -> A
 def runAST(programState : Program_State, ast : ASTc.AST, parameterList : ASTc.Parameter_List) -> A:
     '''Runs any gives AST with gives parameter list. Returns the result of said AST.'''
     if len(ast.parameterList.values) == len(parameterList.values): # The number of parameters must match. We support no default values or anything (yet).
@@ -210,6 +224,7 @@ def runAST(programState : Program_State, ast : ASTc.AST, parameterList : ASTc.Pa
         unknownError(__file__)
 
 A = TypeVar('A')
+# run :: [ASTc.AST] -> [] -> A
 @timer
 def run(ASTs : List[ASTc.AST], arguments : List) -> A:
     '''Runs the program (list of ASTs), starting with the function called sadge (can have any of the honorifics)(can be likened to main in c++). Returns the result of that function.'''

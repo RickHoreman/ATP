@@ -41,10 +41,12 @@ def find(f : Callable[[A, B], bool], list : List[A], target : B, index=0) -> int
     else:
         return find(f, rest, target, index + 1)
 
+# stripHonorific :: String -> String
 def stripHonorific(input : str) -> str:
     '''Removes any honorific of the given string.'''
     return stripHonorificRecursion(input, input)
 
+# stringHonorificRecursion :: String -> String -> String
 def stripHonorificRecursion(input : str, honorific : str) -> str:
     if len(honorific) <= 0:
         return None
@@ -53,7 +55,7 @@ def stripHonorificRecursion(input : str, honorific : str) -> str:
     else:
         return stripHonorificRecursion(input, honorific[1:])
 
-def timer(f):
+def timer(f : Callable) -> Callable:
     '''A Decorator that times how long it takes to run the decorated function.'''
     @wraps(f)
     def inner(*args, **kwargs):

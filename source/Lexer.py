@@ -10,12 +10,12 @@ def readFile(inputFilePath : str) -> str:
     with open(inputFilePath, "r", encoding="utf8") as inputFile: # utf8 encoding is required for the hiraga, kanji, etc.
         return inputFile.read() 
 
-# listStartsWith :: List[String] -> List[String] -> Bool
+# listStartsWith :: [String] -> [String] -> Bool
 def listStartsWith(list1 : List[str], list2 : List[str]) -> bool:
     '''Returns True if the first list starts with, and fully contains, the second.'''
     return reduce(lambda bool1, bool2: bool1 and bool2, zipWith(lambda char1, char2: char1 == char2, list1, list2), True)
 
-# findMapped :: List[String] -> List[String] -> Bool -> List[String] -> List[String] -> Int -> Int
+# findMapped :: [String] -> [String] -> Boolean -> [String] -> [String] -> Integer -> Integer
 def findMapped(f : Callable[[List[str], List[str]], bool], list1 : List[str], list2 : List[str], depth : int=0) -> int:
     '''Returns the index where the function first evaluated to true. The function is called for every item in list2 as f(list1, item).'''
     if len(list2) <= 0:
@@ -26,7 +26,7 @@ def findMapped(f : Callable[[List[str], List[str]], bool], list1 : List[str], li
     else:
         return findMapped(f, list1, tail, depth+1)
 
-# lexNext :: List[Char] -> Int -> Int -> List[Token] -> String -> Int -> List[Token]
+# lexNext :: [Char] -> Integer -> Integer -> [Token] -> String -> Integer -> [Token]
 def lexInt(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token], number : str='', value : int=0) -> List[Tokens.Token]:
     '''Returns the token list with a new fully lexed int appended, or ends on an error. The README contains more information about how ints work in sadge.'''
     if len(input) <= 0:
@@ -66,7 +66,7 @@ def lexInt(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.T
             else: # If the previous was also a magnifier, we add it to the value and continue lexing
                 return lexInt(rest, lineNr, charNr + 1, tokens, number + char, value + n)
 
-# lexNext :: List[Char] -> Int -> Int -> List[Token] -> String -> List[Token]
+# lexNext :: [Char] -> Integer -> Integer -> [Token] -> String -> [Token]
 def lexIdentifier(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token], name : str='') -> List[Tokens.Token]:
     '''Returns the token list with a fully lexed identifier appended. Keeps going until it finds an honorific.'''
     if len(input) <= 0: # If the file ends mid-identifier thats an error
@@ -82,7 +82,7 @@ def lexIdentifier(input : List[str], lineNr : int, charNr : int, tokens : List[T
             return lexNext(rest[len(KC.honorifics[index])-1:], lineNr, charNr+len(KC.honorifics[index]), tokens)
     return lexIdentifier(rest, lineNr, charNr + 1, tokens, name + char) # Add char to name and keep going    
 
-# lexNext :: List[Char] -> Int -> Int -> List[Token] -> List[Token]
+# lexNext :: [Char] -> Integer -> Integer -> [Token] -> [Token]
 def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.Token]) -> List[Tokens.Token]:
     '''Returns the fully lexed result of input. Pass both lineNr and charNr as 1 initially.'''
     if len(input) <= 0:
@@ -200,7 +200,7 @@ def lexNext(input : List[str], lineNr : int, charNr : int, tokens : List[Tokens.
         return lexIdentifier(input, lineNr, charNr, tokens) # If it's not any preset token, it must be an identifier!
     return lexNext(rest, lineNr, charNr + 1, tokens) # Default continue for single char
 
-# lex :: String -> List[Token]
+# lex :: String -> [Token]
 @timer
 def lex(inputFilePath : str) -> List[Tokens.Token]:
     '''Returns the result of lexing the input file, or stops at an error. Has a .time attribute containing the time it took to run the function.'''
