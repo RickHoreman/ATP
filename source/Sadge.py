@@ -2,35 +2,51 @@ import Lexer
 import Parser
 import Interpreter
 import sys
+from utilities import parseRuntimeArguments, stringEndsWithAnyOf
+from KeywordCollections import fileExtensions
 
 arguments = sys.argv
-# TODO: Add argument checks, I.E. must at least contain a filename, check filename correctness, etc.
-filename = "input/test-subroutines.sadge"
-print("Running lexer.")
+if not stringEndsWithAnyOf(arguments[1], fileExtensions):
+    print("Unsupported file extension.")
+    exit(2)
+filename = arguments[1]
+parameters, options = parseRuntimeArguments(arguments[2:], [])
+
+if 'D' in options:
+    print("\nRunning lexer.")
 tokens = Lexer.lex(filename)
-print(f"Lexer ran in {Lexer.lex.time} seconds.")
-# print("Lexer Output (tokens):")
-# for token in tokens:
-#     print(token)
+if 'T' in options:
+    print(f"Lexer ran in {Lexer.lex.time} seconds.")
+if 'L' in options:
+    print("Lexer Output (tokens):")
+    for token in tokens:
+        print(token)
 
-print("Running parser.")
+if 'D' in options:
+    print("\nRunning parser.")
 ASTs = Parser.parse(tokens)
-print(f"Parser ran in {Parser.parse.time} seconds.")
-# print("\nParser Output (AST):")
-# print(f"Constructed {len(ASTs)} ASTs:")
-# for ast in ASTs:
-#     print(ast)
+if 'T' in options:
+    print(f"Parser ran in {Parser.parse.time} seconds.")
+if 'P' in options:
+    print("\nParser Output (AST):")
+    print(f"Constructed {len(ASTs)} ASTs:")
+    for ast in ASTs:
+        print(ast)
 
-print("Running code.")
-result = Interpreter.run(ASTs, arguments[1:])
-print(f"Code ran in {Interpreter.run.time} seconds.")
-print("\nInterpreter Output (result):")
-print(result)
+if 'I' in options:
+    if 'D' in options:
+        print("\nRunning code.")
+    result = Interpreter.run(ASTs, parameters)
+    if 'T' in options:
+        print(f"Code ran in {Interpreter.run.time} seconds.")
+    if 'R' in options:
+        print("\nInterpreter Output (result):")
+    print(result)
 
-print(f"Total Interpreter run time: {Lexer.lex.time + Parser.parse.time + Interpreter.run.time}")
+    if 'T' in options:
+        print(f"Total Interpreter run time: {Lexer.lex.time + Parser.parse.time + Interpreter.run.time}")
 
 # Todo:
-# TODO: Add Haskell Typing to everything that doesnt have it yet
 # TODO: Make README
 # TODO: Make explanation video
 # TODO: Add proper error handling

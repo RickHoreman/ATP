@@ -1,4 +1,4 @@
-from typing import Callable, List, TypeVar
+from typing import Callable, List, TypeVar, Union, Tuple
 import inspect
 from KeywordCollections import honorifics
 from functools import wraps
@@ -64,3 +64,38 @@ def timer(f : Callable) -> Callable:
         inner.time = time.time() - inner.time
         return result
     return inner
+
+# stringEndsWithAnyOf :: String -> [String] -> String | None
+def stringEndsWithAnyOf(input : str, endings : List[str]) -> Union[str, None]:
+    '''Checks if the input string ends with any of the listed endings, if so returns that ending, otherwise returns None.'''
+    if len(endings) <= 0:
+        return None
+    else:
+        ending, *rest = endings
+        if input.endswith(ending):
+            return ending
+        else:
+            return stringEndsWithAnyOf(input, rest)
+
+# parseRuntimeOptions :: str -> [char] -> [char]
+def parseRuntimeOptions(options : str, parsedOptions : List[str]) -> List[str]:
+    '''Parses a string of options like: "-ILP", returns a list of those characters seperated out. No support for specific values, only; the option is there, or it is not.'''
+    if len(options) <= 0:
+        return parsedOptions
+    option, *rest = options
+    parsedOptions.append(option)
+    return parseRuntimeOptions(rest, parsedOptions)
+
+# parseRuntimeArguments :: [String] -> [String] -> ([String], [String])'
+def parseRuntimeArguments(arguments : List[str], parsedArgs : List[str]) -> Tuple[List[str], List[str]]:
+    '''Parses a list of strings containing the runtime arguments. Returns a tuple containing a list of arguments to be passed to the interpreter and a list of options passed like; "-ILP".'''
+    if len(arguments) <= 0:
+        return parsedArgs, []
+    argument, *rest = arguments
+    if argument.startswith('-'):
+        return parsedArgs, parseRuntimeOptions(argument, [])
+    else:
+        if argument.isdigit():
+            argument = int(argument)
+        parsedArgs.append(argument)
+        return parseRuntimeArguments(rest, parsedArgs)

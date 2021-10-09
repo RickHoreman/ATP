@@ -35,3 +35,16 @@ honorifics = [
     "ばか", #I know, not really an honorific :)
     "ぱいせん"
 ]
+
+fileExtensions = [
+    ".sadge",
+    ".pain",
+    ".suffering",
+    ".painandsuffering",
+    ".yabe",
+    ".crabs",
+    ".plankton",
+    ".planktonthrowsitback",
+    ".formula",
+    ".theformula"
+]

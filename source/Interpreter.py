@@ -199,6 +199,8 @@ def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, prog
             return result
     elif isinstance(code, ASTc.Print_Statement):
         print(solveExpression(programState, deepcopy(code.expression)))
+    elif isinstance(code, ASTc.Function_Call):
+        return runFunctionCall(programState, code)
     
     # CONTINUE HERE
     return runCodeBlock(programState, codeBlock, progress)
