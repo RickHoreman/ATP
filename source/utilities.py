@@ -13,7 +13,7 @@ def unknownError(filename : str):
 def space( repeatCount : int):
     if (repeatCount <= 0):
         return ""
-    return "|   " + space(repeatCount - 1)
+    return "|   " + space(repeatCount - 1) # I chose to define the actual string spaces here so that I can change it in a single place if I ever want to.
 
 A = TypeVar('A')
 B = TypeVar('B')
@@ -32,6 +32,7 @@ A = TypeVar('A')
 B = TypeVar('B')
 # find :: (a → b → Bool) → [a] → b → Int
 def find(f : Callable[[A, B], bool], list : List[A], target : B, index=0) -> int:
+    '''Returns the index of the item in list where the function evaluates to true. Or None, if that never happens.'''
     if len(list) == 0:
         return None
     item, *rest = list
@@ -41,6 +42,7 @@ def find(f : Callable[[A, B], bool], list : List[A], target : B, index=0) -> int
         return find(f, rest, target, index + 1)
 
 def stripHonorific(input : str) -> str:
+    '''Removes any honorific of the given string.'''
     return stripHonorificRecursion(input, input)
 
 def stripHonorificRecursion(input : str, honorific : str) -> str:
@@ -52,6 +54,7 @@ def stripHonorificRecursion(input : str, honorific : str) -> str:
         return stripHonorificRecursion(input, honorific[1:])
 
 def timer(f):
+    '''A Decorator that times how long it takes to run the decorated function.'''
     @wraps(f)
     def inner(*args, **kwargs):
         inner.time = time.time()

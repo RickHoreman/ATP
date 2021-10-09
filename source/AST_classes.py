@@ -7,7 +7,7 @@ class SimpleStatement:
     def __str__(self) -> str:
         return f"{self.__class__.__name__}"
 
-class Expression_Base():
+class Expression_Base(): # Had to make this so that I could do the typing on Expression's __init__ :/
     # __str__ :: None -> String
     def __str__(self) -> str:
         return f"{self.__class__.__name__}"

@@ -30,7 +30,6 @@ print(result)
 print(f"Total Interpreter run time: {Lexer.lex.time + Parser.parse.time + Interpreter.run.time}")
 
 # Todo:
-# TODO: Add comments, lots of comments
 # TODO: Add Haskell Typing to everything that doesnt have it yet
 # TODO: Make README
 # TODO: Make explanation video

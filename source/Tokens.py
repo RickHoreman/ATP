@@ -1,12 +1,5 @@
 from Base_Token import Token
 
-### UNUSED
-# class Primitive_Type(Token): 
-#     # __init__ :: Int -> Int -> None
-#     def __init__(self, lineNr : int, charNr : int) -> None:
-#         super().__init__(lineNr, charNr)
-###
-
 class Value(Token):
     # __init__ :: Int -> Int -> Int -> None
     def __init__(self, lineNr : int, charNr : int) -> None:
