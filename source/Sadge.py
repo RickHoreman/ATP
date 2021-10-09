@@ -47,6 +47,6 @@ if 'I' in options:
         print(f"Total Interpreter run time: {Lexer.lex.time + Parser.parse.time + Interpreter.run.time}")
 
 # Todo:
-# TODO: Make README
+# TODO: Finish README (part about additional functionality)
 # TODO: Make explanation video
 # TODO: Add proper error handling
