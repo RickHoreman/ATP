@@ -60,6 +60,7 @@ Concrete examples include:
 - Booleans are fairly simple;
   - `yesh` for true and
   - `nyet` for false
+- Return statements are simply `yeet` followed by some expression.
 - Code blocks are c++ style (indents dont matter) so we need code block open and closing characters...
   - For code block open we use `OwO` instead of `{`
   - For code block close we use `UwU` instead of `}`
@@ -95,7 +96,7 @@ Looks simple enough right? Surely I don't even need to explain... I do? Well alr
 Alternatively there are a couple of default values:
 - Starting line 2 with `If I back it up` for a default `startingValue` of `0`
 - Starting line 4 with `If I speed it up` for a default `increment` of `1`
-- Starting line 4 with `If I speed it up` for a default `increment` of `-1`
+- Starting line 4 with `If I slow it down` for a default `increment` of `-1`
 
 *Note: the mOcKiNG on `tHe fOrMuLA` is case sensitive! (as well as the rest of Sadge)
 
