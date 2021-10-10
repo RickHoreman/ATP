@@ -48,10 +48,6 @@ class Parameter_List():
     def append(self, value : Tokens.Value):
         self.values.append(value)
 
-    # pop :: Parameter_List -> (Tokens.Value, Parameter_List)
-    def pop(self) -> Tokens.Value:
-        return self.values.pop()
-
     # __str__ :: Parameter_List -> String
     def __str__(self) -> str:
         spacing = space(self.nestLevel)

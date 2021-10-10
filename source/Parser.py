@@ -77,10 +77,11 @@ def parseExpression(tokens : List[Tokens.Token], expression : ASTc.Expression, n
             else:
                 return parseExpression(rest, expression, nestLevel)
         elif checkForPattern(tokens, TP.Function_Call): # If our expression contains a function call, we need to parse it first.
-            rest, expression.left = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(nestLevel + 1, tokens[TP.Function_Call.index(Tokens.Identifier)]), nestLevel+1)
+            rest, expression.right = parseFunctionCall(tokens[len(TP.Function_Call):], ASTc.Function_Call(nestLevel + 1, tokens[TP.Function_Call.index(Tokens.Identifier)]), nestLevel+1)
         elif isinstance(token, Tokens.Value): # If it's simply a value, assign it!
             expression.right = token
         else: # Some other unexpected syntax
+            print(token)
             #TODO: ADD ERROR HANDLING
             unknownError(__file__)
         return parseExpression(rest, expression, nestLevel)

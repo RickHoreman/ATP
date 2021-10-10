@@ -73,8 +73,10 @@ def initParameters(programState : Program_State, identifierList : ASTc.Parameter
     '''Initialises the entries in the identifier- and valueList as variables in the program state. Returns the new program state.'''
     if len(identifierList.values) <= 0 or len(valueList.values) <= 0:
         return programState
-    identifier = identifierList.pop()
-    value = valueList.pop()
+    identifier, *restId = identifierList.values
+    value, *restVal = valueList.values
+    identifierList.values = restId
+    valueList.values = restVal
     programState.setVariable(identifier, value)
     return initParameters(programState, identifierList, valueList)
 
@@ -123,10 +125,10 @@ def solveExpression(programState : Program_State, expression : Union[ASTc.Expres
         return runFunctionCall(programState, expression)
     elif type(expression) == int or type(expression) == bool:
         return expression
-    if isinstance(expression.left, ASTc.Expression):                # Solve any recursive expressions.
-        expression.left = solveExpression(programState, expression) # (expression in expression in expression...)
+    if isinstance(expression.left, ASTc.Expression):                     # Solve any recursive expressions.
+        expression.left = solveExpression(programState, expression.left) # (expression in expression in expression...)
     if isinstance(expression.right, ASTc.Expression):
-        expression.right = solveExpression(programState, expression)
+        expression.right = solveExpression(programState, expression.right)
     if isinstance(expression.left, Tokens.Identifier):
         expression.left = programState.getValue(expression.left)    # Ask the program state for the values
     if isinstance(expression.right, Tokens.Identifier):             # of any identifiers.
@@ -151,7 +153,8 @@ def solveParameterList(programState : Program_State, parameterList : ASTc.Parame
     '''This goes through all parameters in a function call's parameter list and solves any expressions it contains. Returns the "solved" parameter list.'''
     if len(parameterList.values) <= 0:
         return solvedParameterList
-    parameter = parameterList.pop()
+    parameter, *rest = parameterList.values
+    parameterList.values = rest
     solvedParameterList.append(solveExpression(programState, deepcopy(parameter)))
     return solveParameterList(programState, parameterList, solvedParameterList)
 
@@ -200,7 +203,9 @@ def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, prog
     elif isinstance(code, ASTc.Print_Statement):
         print(solveExpression(programState, deepcopy(code.expression)))
     elif isinstance(code, ASTc.Function_Call):
-        return runFunctionCall(programState, code)
+        result = runFunctionCall(programState, code)
+        if result != None:
+            return result
     
     # CONTINUE HERE
     return runCodeBlock(programState, codeBlock, progress)

@@ -208,10 +208,18 @@ Functie resultaat wordt op de volgende manier weergegeven: Geprint naar de termi
 
 ---
 
-Dit deel is nog niet af
+### Interpreter-functionaliteit (should/could-have):
 
-Interpreter-functionaliteit (should/could-have):
+Opties uit de opdracht reader:
 
-[Gekozen functionaliteit] geïmplementeerd door middel van de volgende functies: a) [functie] in [file] op regel [regel]
+- [Error messaging] is nog zeer beperkt en lang niet wat ik er van had willen maken, maar het is beter dan niks. Zie bijvoorbeeld [source/Parser.py] op regels [39-40]
 
-[Extra functionaliteit overlegd met docent, goedkeuring: datum e-mail; overeengekomen max. aantal punten: X]
+- [Advanced language features] Ik weet niet of het telt, maar Sadge support printing, expressions in expressions (in expressions, ga zo maar door) en for-loops. Die zijn alle drie te vinden in [examples/recursive_expressions.plankton], printen op [regel 4], for-loop [regels 2-6] en expressions in expressions op [regel 21]
+
+- [Eigen taal] Sadge is uiteraard een zelf bedachte taal, de eventuele extra voor originaliteit/creativiteit is your call.
+
+Andere extra functionaliteit (niet besproken met docent) waar ik nog even de aandacht op wil leggen: 
+
+- Het commandline flag systeem zie [source/Sadge.py] en [source/utilities.py][regels 80-101]. (eerder in de reader in detail besproken)
+
+- De mogelijkheid om de run time te printen, per deel en in totaal, met de flag `-T`. Hiervoor is de decorator gebruikt die ook bij de verplichte functionaliteiten wordt besproken.
