@@ -99,6 +99,8 @@ Alternatively there are a couple of default values:
 
 *Note: the mOcKiNG on `tHe fOrMuLA` is case sensitive! (as well as the rest of Sadge)
 
+**Note: if the for-loop makes absolutely no sense to you, check [this video](https://www.youtube.com/watch?v=5wGX_4AwYQQ) (sorry not sorry).
+
 Generally you will want to use your incrementer in your loop-body in some fashion.
 For this purpose it is defined as a variable under the name `Crabsさん`.
 This is a fully-fledged variable. So you can use it's value in expressions, assignments, etc. or change it!
