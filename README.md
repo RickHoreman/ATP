@@ -57,6 +57,9 @@ Concrete examples include:
   - All numbers (only positive ints really supported, can get negative by subtracting from 0 :) ) must be written in ___Completely Correct Japanese™___.
   - The maximum lexable single number is 九万九千九百九十九 (99999), if you need something higher, it's basic math :).
   - We use `〇` (maru) for `0`, it might not be _the_ most correct thing to use, but it's a single character (rather than something like ゼロ) and it looks good ¯\\\_(ツ)\_/¯.
+- Booleans are fairly simple;
+  - `yesh` for true and
+  - `nyet` for false
 - Code blocks are c++ style (indents dont matter) so we need code block open and closing characters...
   - For code block open we use `OwO` instead of `{`
   - For code block close we use `UwU` instead of `}`
