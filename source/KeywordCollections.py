@@ -36,6 +36,26 @@ honorifics = [
     "ぱいせん"
 ]
 
+romajiHonorifics = { # ASM doesnt allow hiragana, kanji, etc. so we have to romajify them :(
+    "さん" : "san",
+    "ちゃん" : "chan",
+    "さま" : "sama",
+    "くん" : "kun",
+    "たん" : "tan",
+    "せんぱい" : "senpai",
+    "せんせい" : "sensei",
+    "先生" : "sensei_k",
+    "先輩" : "senpai_k",
+    "君" : "kun_k",
+    "様" : "sama",
+    "王女様" : "oujosama",
+    "殿" : "dono_k",
+    "どの" : "dono",
+    "との" : "tono",
+    "ばか" : "baka",
+    "ぱいせん" : "paisen"
+}
+
 fileExtensions = [
     ".sadge",
     ".pain",

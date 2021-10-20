@@ -1,13 +1,22 @@
+from io import TextIOWrapper
 from typing import Callable, List, TypeVar, Union, Tuple
 import inspect
-from KeywordCollections import honorifics
+from KeywordCollections import honorifics, romajiHonorifics
 from functools import wraps
 import time
 
 # unkownError :: String -> None
-def unknownError(filename : str):
-    print(f"Exited due to unhandled error at line {inspect.currentframe().f_back.f_lineno} in file {filename}")
-    exit(69) 
+def unknownError(pythonFilename : str):
+    print(f"Exited due to unhandled error at line {inspect.currentframe().f_back.f_lineno} in file {pythonFilename}")
+    exit(69)
+
+                   #(as in, a writable opened file)
+# unknownCompilerError :: file -> String -> None
+def unknownCompilerError(outputFile : TextIOWrapper, pythonFilename : str):
+    outputFile.write(f"Exited due to unhandled error at line {inspect.currentframe().f_back.f_lineno} in file {pythonFilename}")
+    outputFile.close()
+    print(f"Exited due to unhandled error at line {inspect.currentframe().f_back.f_lineno} in file {pythonFilename}")
+    exit(420)
 
 # space :: Integer -> String
 def space( repeatCount : int):
@@ -99,3 +108,17 @@ def parseRuntimeArguments(arguments : List[str], parsedArgs : List[str]) -> Tupl
             argument = int(argument)
         parsedArgs.append(argument)
         return parseRuntimeArguments(rest, parsedArgs)
+
+# romajifyHonorific :: String -> String
+def romajifyHonorific(input : str) -> str:
+    '''Changes any honorific of the given string to romaji.'''
+    return romajifyHonorificRecursion(input, input)
+
+# romajifyHonorificRecursion :: String -> String -> String
+def romajifyHonorificRecursion(input : str, honorific : str) -> str:
+    if len(honorific) <= 0:
+        return None
+    elif honorific in honorifics:
+        return input[:len(input)-len(honorific)] + '_' + romajiHonorifics[honorific]
+    else:
+        return romajifyHonorificRecursion(input, honorific[1:])
