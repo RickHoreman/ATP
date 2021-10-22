@@ -1,9 +1,10 @@
     .cpu cortex-m0
     .text
     .align 4
+    .global sommig_sama
     .global sadge_san
 
-sadge_san:
+sommig_sama:
     push {r7, lr}
     sub sp, sp, #24
     mov r7, sp
@@ -40,5 +41,20 @@ sadge_san:
     ldr r0, [r7, #8]
     add sp, sp, #24
     pop {r7, pc}
+    mov sp, r7
     add sp, sp, #24
+    pop {r7, pc}
+
+sadge_san:
+    push {r7, lr}
+    sub sp, sp, #8
+    mov r7, sp
+    str r0, [r7, #4]
+    ldr r0, [r7, #4]
+    bl sommig_sama
+    mov r0, r0
+    add sp, sp, #8
+    pop {r7, pc}
+    mov sp, r7
+    add sp, sp, #8
     pop {r7, pc}

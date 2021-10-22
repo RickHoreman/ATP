@@ -36,17 +36,30 @@ def findVariables(codeBlock : ASTc.Code_Block, variables : List[Tokens.Identifie
         if find(lambda variable, name: variable.name == name, variables, "flIncrement") == None:
             variables = variables + [Tokens.Identifier(0, 0, "flIncrement")]
         variables = findVariables(code.body, variables, 0)
-    elif isinstance(code, ASTc.Function_Call):
-        print("TODO")
     return findVariables(codeBlock, variables, progress)
 
 # storeParametersOnStack :: TextIOWrapper -> Integer -> Integer -> TextIOWrapper
-def storeParametersOnStack(outputFile : TextIOWrapper, nParameters, progress) -> TextIOWrapper:
+def storeParametersOnStack(outputFile : TextIOWrapper, nParameters : int, progress : int) -> TextIOWrapper:
     if nParameters <= 0:
         return outputFile
     else:
         outputFile.write(f"    str r{progress}, [r7, #{4*(progress+1)}]\n")
         return storeParametersOnStack(outputFile, nParameters-1, progress+1)
+
+# storeParametersInRegisters :: TextIOWrapper -> [ASTc.Expression] -> Integer -> [Tokens.Identifier] -> TextIOWrapper
+def storeParametersInRegisters(outputFile : TextIOWrapper, parameters : List[ASTc.Expression], progress : int, variables : List[Tokens.Identifier]) -> TextIOWrapper:
+    if len(parameters) <= 0:
+        return outputFile
+    else:
+        parameter, *rest = parameters
+        outputFile = compileExpression(outputFile, parameter, progress, variables)
+        return storeParametersInRegisters(outputFile, rest, progress+1, variables)
+
+# compileFunctionCall :: TextIOWrapper -> ASTc.FunctionCall -> [Tokens.Identifier] -> TextIOWrapper
+def compileFunctionCall(outputFile : TextIOWrapper, functionCall : ASTc.Function_Call, variables : List[Tokens.Identifier]) -> TextIOWrapper:
+    outputFile = storeParametersInRegisters(outputFile, functionCall.parameterList.values, 0, variables)
+    outputFile.write(f"    bl {romajifyHonorific(functionCall.identifier.name)}\n")
+    return outputFile
 
 # compileExpression :: TextIOWrapper -> ASTc.Expression -> Integer -> [Tokens.Identifier] -> TextIOWrapper
 def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, resultAdress : int, variables : List[Tokens.Identifier]) -> TextIOWrapper:
@@ -61,8 +74,9 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
             outputFile.write(f"    sub r{resultAdress}, r{resultAdress}, #{abs(expression.value)}\n")
         return outputFile
     elif isinstance(expression, ASTc.Function_Call):
-        print("TODO: function calls in expressions.")
-        return #runFunctionCall(expression)
+        outputFile = compileFunctionCall(outputFile, expression, variables)
+        outputFile.write(f"    mov r{resultAdress}, r0\n")
+        return outputFile
     elif type(expression) == int or type(expression) == bool:
         if expression >= 0:
             outputFile.write(f"    mov r{resultAdress}, #{expression}\n")
@@ -128,10 +142,6 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
             outputFile.write(f".lt{expression.operator.charNr}.{expression.operator.lineNr}end:\n")
     return outputFile
 
-    # expression solving error
-    #TODO: ADD ERROR HANDLING
-    # unknownCompilerError(outputFile, __file__)
-
 # compileCodeBlock :: TextIOWrapper -> ASTc.Code_Block -> Integer -> [Tokens.Identifier] -> TextIOWrapper
 def compileCodeBlock(outputFile : TextIOWrapper, codeBlock : ASTc.Code_Block, progress : int, variables : List[Tokens.Identifier]) -> TextIOWrapper:
     if progress >= len(codeBlock.code):
@@ -182,7 +192,7 @@ def compileCodeBlock(outputFile : TextIOWrapper, codeBlock : ASTc.Code_Block, pr
 
 # compileAST :: TextIOWrapper -> ASTc.AST -> TextIOWrapper
 def compileAST(outputFile : TextIOWrapper, ast : ASTc.AST) -> TextIOWrapper:
-    outputFile.write(f"{romajifyHonorific(ast.identifier.name)}:\n")
+    outputFile.write(f"\n{romajifyHonorific(ast.identifier.name)}:\n")
     variables = ast.parameterList.values
     variables = variables + findVariables(deepcopy(ast.codeBlock), [], 0)
     # for var in variables:
@@ -192,6 +202,7 @@ def compileAST(outputFile : TextIOWrapper, ast : ASTc.AST) -> TextIOWrapper:
     outputFile.write("    mov r7, sp\n")
     outputFile = storeParametersOnStack(outputFile, len(ast.parameterList.values), 0)
     outputFile = compileCodeBlock(outputFile, ast.codeBlock, 0, variables)
+    outputFile.write(f"    mov sp, r7\n")
     outputFile.write(f"    add sp, sp, #{(len(variables) + 1) * 4}\n")
     outputFile.write("    pop {r7, pc}\n")
     return outputFile
@@ -205,7 +216,6 @@ def compile(ASTs : List[ASTc.AST]):
     outputFile.write("    .text\n")
     outputFile.write("    .align 4\n")
     outputFile = addFunctionsToGlobalList(outputFile, deepcopy(ASTs))
-    outputFile.write('\n')
     list(map(lambda ast: compileAST(outputFile, ast), ASTs))
     #outputFile.write("sadge_oujosama:\n    add r0, r0, #1\n    mov pc, lr")
     outputFile.close()
