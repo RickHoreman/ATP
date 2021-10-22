@@ -28,11 +28,14 @@ def findVariables(codeBlock : ASTc.Code_Block, variables : List[Tokens.Identifie
         variables = findVariables(code.trueCodeBlock, variables, 0)
         if code.elseCodeBlock != None:
             variables = findVariables(code.elseCodeBlock, variables, 0)
-        return findVariables(codeBlock, variables, progress)
-    #elif isinstance(code, ASTc.Return_Statement):
-        #return findVariables(codeBlock, variables + [Tokens.Identifier(0, 0, "return")], progress)
     elif isinstance(code, ASTc.For_Loop):
-        print("TODO")
+        if find(lambda variable, name: variable.name == name, variables, "Crabsさん") == None:
+            variables = variables + [Tokens.Identifier(0, 0, "Crabsさん")]
+        if find(lambda variable, name: variable.name == name, variables, "flControlValue") == None:
+            variables = variables + [Tokens.Identifier(0, 0, "flControlValue")]
+        if find(lambda variable, name: variable.name == name, variables, "flIncrement") == None:
+            variables = variables + [Tokens.Identifier(0, 0, "flIncrement")]
+        variables = findVariables(code.body, variables, 0)
     elif isinstance(code, ASTc.Function_Call):
         print("TODO")
     return findVariables(codeBlock, variables, progress)
@@ -51,19 +54,27 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
         outputFile.write(f"    ldr r{resultAdress}, [r7, #{(find(lambda variable, identifier: variable.name == identifier.name, variables, expression)+1)*4}]\n")
         return outputFile
     elif isinstance(expression, Tokens.Integer) or isinstance(expression, Tokens.Boolean):
-        outputFile.write(f"    mov r{resultAdress}, #{expression.value}\n")
+        if expression.value >= 0:
+            outputFile.write(f"    mov r{resultAdress}, #{expression.value}\n")
+        else:
+            outputFile.write(f"    mov r{resultAdress}, #0\n")
+            outputFile.write(f"    sub r{resultAdress}, r{resultAdress}, #{abs(expression.value)}\n")
         return outputFile
     elif isinstance(expression, ASTc.Function_Call):
         print("TODO: function calls in expressions.")
         return #runFunctionCall(expression)
     elif type(expression) == int or type(expression) == bool:
-        outputFile.write(f"    mov r{resultAdress}, #{expression}\n")
-        return expression
+        if expression >= 0:
+            outputFile.write(f"    mov r{resultAdress}, #{expression}\n")
+        else:
+            outputFile.write(f"    mov r{resultAdress}, #0\n")
+            outputFile.write(f"    sub r{resultAdress}, r{resultAdress}, #{abs(expression)}\n")
+        return outputFile
     if isinstance(expression.left, ASTc.Expression):
-        compileExpression(outputFile, expression.left, resultAdress, variables)
+        outputFile = compileExpression(outputFile, expression.left, resultAdress, variables)
     if isinstance(expression.right, ASTc.Expression):
         outputFile.write(f"    push {'{'}r{resultAdress}{'}'}\n")
-        compileExpression(outputFile, expression.right, resultAdress, variables)
+        outputFile = compileExpression(outputFile, expression.right, resultAdress, variables)
         outputFile.write(f"    mov r{resultAdress+1}, r{resultAdress}\n")
         outputFile.write(f"    pop {'{'}r{resultAdress}{'}'}\n")
     if isinstance(expression.left, Tokens.Identifier):
@@ -109,12 +120,13 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
             outputFile.write(f".gt{expression.operator.charNr}.{expression.operator.lineNr}end:\n")
         elif isinstance(expression.operator, Tokens.Smaller_Than):
             outputFile.write(f"    cmp r{resultAdress}, r{resultAdress+1}\n")
-            outputFile.write(f"    blt .lt{expression.operator.charNr}{expression.operator.lineNr}true\n")
+            outputFile.write(f"    blt .lt{expression.operator.charNr}.{expression.operator.lineNr}true\n")
             outputFile.write(f"    mov r{resultAdress}, #0\n")
             outputFile.write(f"    b .lt{expression.operator.charNr}.{expression.operator.lineNr}end\n")
             outputFile.write(f".lt{expression.operator.charNr}.{expression.operator.lineNr}true:\n")
             outputFile.write(f"    mov r{resultAdress}, #1\n")
             outputFile.write(f".lt{expression.operator.charNr}.{expression.operator.lineNr}end:\n")
+    return outputFile
 
     # expression solving error
     #TODO: ADD ERROR HANDLING
@@ -149,7 +161,21 @@ def compileCodeBlock(outputFile : TextIOWrapper, codeBlock : ASTc.Code_Block, pr
         outputFile.write("    pop {r7, pc}\n")
         return outputFile
     elif isinstance(code, ASTc.For_Loop):
-        print("TODO4")
+        outputFile = compileExpression(outputFile, code.startingValue, 1, variables)
+        outputFile.write(f"    str r1, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'Crabsさん')+1)*4}]\n")
+        outputFile = compileExpression(outputFile, code.controlValue, 1, variables)
+        outputFile.write(f"    str r1, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'flControlValue')+1)*4}]\n")
+        outputFile = compileExpression(outputFile, code.increment, 1, variables)
+        outputFile.write(f"    str r1, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'flIncrement')+1)*4}]\n")
+        outputFile.write(f".fl{code.comparisonOperator.charNr}.{code.comparisonOperator.lineNr}:\n")
+        outputFile = compileCodeBlock(outputFile, code.body, 0, variables)
+        outputFile.write(f"    ldr r1, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'Crabsさん')+1)*4}]\n")
+        outputFile.write(f"    ldr r2, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'flIncrement')+1)*4}]\n")
+        outputFile.write(f"    add r1, r1, r2\n")
+        outputFile.write(f"    str r1, [r7, #{(find(lambda variable, name: variable.name == name, variables, 'Crabsさん')+1)*4}]\n")
+        outputFile = compileExpression(outputFile, ASTc.Expression(0, Tokens.Identifier(0, 0, "Crabsさん"), code.comparisonOperator, Tokens.Identifier(0, 0, "flControlValue")), 1, variables)
+        outputFile.write(f"    cmp r1, #1\n")
+        outputFile.write(f"    beq .fl{code.comparisonOperator.charNr}.{code.comparisonOperator.lineNr}\n")
     elif isinstance(code, ASTc.Function_Call):
         print("TODO5")
     return compileCodeBlock(outputFile, codeBlock, progress, variables)
