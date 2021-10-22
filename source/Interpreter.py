@@ -206,8 +206,6 @@ def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, prog
         result = runFunctionCall(programState, code)
         if result != None:
             return result
-    
-    # CONTINUE HERE
     return runCodeBlock(programState, codeBlock, progress)
 
 A = TypeVar('A')
