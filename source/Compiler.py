@@ -188,9 +188,12 @@ def compileCodeBlock(outputFile : TextIOWrapper, codeBlock : ASTc.Code_Block, pr
         outputFile = compileExpression(outputFile, ASTc.Expression(0, Tokens.Identifier(0, 0, "Crabsさん"), code.comparisonOperator, Tokens.Identifier(0, 0, "flControlValue")), 1, variables)
         outputFile.write(f"    cmp r1, #1\n")
         outputFile.write(f"    beq .fl{code.comparisonOperator.charNr}.{code.comparisonOperator.lineNr}\n")
+    elif isinstance(code, ASTc.Print_Statement):
+        outputFile = compileExpression(outputFile, code.expression, 0, variables)
+        outputFile.write(f"    bl print\n")
     elif isinstance(code, ASTc.Function_Call):
-        print("TODO5")
-    return compileCodeBlock(outputFile, codeBlock, progress, variables)
+        outputFile = compileFunctionCall(outputFile, code, variables)   # I am aware that nothing is being done with the potential return value of the function
+    return compileCodeBlock(outputFile, codeBlock, progress, variables) # but this doesnt need to happen, this is a sole function call, the result of which is not being placed in any variable.
 
 # compileAST :: TextIOWrapper -> ASTc.AST -> TextIOWrapper
 def compileAST(outputFile : TextIOWrapper, ast : ASTc.AST) -> TextIOWrapper:

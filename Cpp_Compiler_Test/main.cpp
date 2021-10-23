@@ -2,6 +2,10 @@
 #include <charconv>
 #include <array>
 
+extern "C" void print(int n){
+    hwlib::cout << n;
+}
+
 extern "C" int sadge_sensei_k();
 extern "C" int sommig_sama(int n);
 extern "C" int odd_tan(int n);
@@ -9,6 +13,7 @@ extern "C" int even_chan(int n);
 extern "C" int recursiveExpression_oujosama_k();
 extern "C" int compare_san(int n1, int n2, int mode);
 extern "C" int forLoop_san(int startingValue, int increment, int controlValue, int mode);
+extern "C" void printXtimes_chan(int n, int x);
 
 // The following tests are made for examples/unit_tests.painandsuffering.
 // Make sure the variable SADGE in Makefile has that file's relatvive path as value, otherwise these tests wont work for the most part.
@@ -16,10 +21,13 @@ extern "C" int forLoop_san(int startingValue, int increment, int controlValue, i
 int main(){
     hwlib::wait_ms(1000);
 
+    hwlib::cout << "Print demo: \n";
+    printXtimes_chan(10, 3); // This requires the extern C print function at line 5 to be defined.
+
     unsigned int passedTests = 0;
     unsigned int failedTests = 0;
 
-    hwlib::cout << "Commencing tests.\n";
+    hwlib::cout << "\nCommencing tests.\n";
 
     // First off, the tests for the "test subroutines" we had to implement.
     if(odd_tan(1) != 1){

@@ -8,6 +8,7 @@
     .global recursiveExpression_oujosama_k
     .global compare_san
     .global forLoop_san
+    .global printXtimes_chan
 
 even_chan:
     push {r7, lr}
@@ -447,4 +448,38 @@ forLoop_san:
 .if5.114end:
     mov sp, r7
     add sp, sp, #36
+    pop {r7, pc}
+
+printXtimes_chan:
+    push {r7, lr}
+    sub sp, sp, #24
+    mov r7, sp
+    str r0, [r7, #4]
+    str r1, [r7, #8]
+    mov r1, #0
+    str r1, [r7, #12]
+    ldr r1, [r7, #8]
+    str r1, [r7, #16]
+    mov r1, #1
+    str r1, [r7, #20]
+.fl28.131:
+    ldr r0, [r7, #4]
+    bl print
+    ldr r1, [r7, #12]
+    ldr r2, [r7, #20]
+    add r1, r1, r2
+    str r1, [r7, #12]
+    ldr r1, [r7, #12]
+    ldr r2, [r7, #16]
+    cmp r1, r2
+    blt .lt28.131true
+    mov r1, #0
+    b .lt28.131end
+.lt28.131true:
+    mov r1, #1
+.lt28.131end:
+    cmp r1, #1
+    beq .fl28.131
+    mov sp, r7
+    add sp, sp, #24
     pop {r7, pc}
