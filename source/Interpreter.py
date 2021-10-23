@@ -5,6 +5,8 @@ import Tokens
 import Token_Patterns as TP
 from utilities import unknownError, find, stripHonorific, timer
 from copy import deepcopy
+import sys
+sys.setrecursionlimit(200000)
 
 class Program_State():
     '''A datatype capable of containing scopes for (recursive!) function calls.'''

@@ -68,7 +68,7 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
         return outputFile
     elif isinstance(expression, Tokens.Integer) or isinstance(expression, Tokens.Boolean):
         if expression.value >= 0:
-            outputFile.write(f"    mov r{resultAdress}, #{expression.value}\n")
+            outputFile.write(f"    mov r{resultAdress}, #{int(expression.value)}\n")
         else:
             outputFile.write(f"    mov r{resultAdress}, #0\n")
             outputFile.write(f"    sub r{resultAdress}, r{resultAdress}, #{abs(expression.value)}\n")
@@ -96,11 +96,13 @@ def compileExpression(outputFile : TextIOWrapper, expression : ASTc.Expression, 
     if isinstance(expression.right, Tokens.Identifier):
         outputFile.write(f"    ldr r{resultAdress+1}, [r7, #{(find(lambda variable, identifier: variable.name == identifier.name, variables, expression.right)+1)*4}]\n")
     if isinstance(expression.left, ASTc.Function_Call):
-        print("TODO: function calls in expressions.")
+        outputFile = compileFunctionCall(outputFile, expression.left, variables)
+        outputFile.write(f"    mov r{resultAdress}, r0\n")
     if isinstance(expression.right, ASTc.Function_Call):
-        print("TODO: function calls in expressions.")
+        outputFile = compileFunctionCall(outputFile, expression.right, variables)
+        outputFile.write(f"    mov r{resultAdress+1}, r0\n")
     if isinstance(expression.left, Tokens.Integer) or isinstance(expression.left, Tokens.Boolean):
-        outputFile.write(f"    mov r{resultAdress+1}, #{expression.left.value}\n")
+        outputFile.write(f"    mov r{resultAdress}, #{expression.left.value}\n")
     if isinstance(expression.right, Tokens.Integer) or isinstance(expression.right, Tokens.Boolean):
         outputFile.write(f"    mov r{resultAdress+1}, #{expression.right.value}\n")
     if expression.left != None and expression.operator != None and expression.right != None:

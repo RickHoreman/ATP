@@ -20,7 +20,7 @@ HEADERS :=
 # other places to look for files for this project
 SEARCH  := 
 
-SADGE := ../examples/simple_test.pain
+SADGE := ../examples/unit_tests.painandsuffering
 
 SADGEFLAGS := -DTC
 
