@@ -5,6 +5,8 @@ import Tokens
 import Token_Patterns as TP
 from utilities import unknownError, find, stripHonorific, timer
 from copy import deepcopy
+import sys
+sys.setrecursionlimit(200000)
 
 class Program_State():
     '''A datatype capable of containing scopes for (recursive!) function calls.'''
@@ -162,7 +164,7 @@ A = TypeVar('A')
 # runForLoop :: Program_State -> ASTc.For_Loop -> A
 def runForLoop(programState : Program_State, forLoop : ASTc.For_Loop) -> A:
     '''Runs a for loop and returns it's result, if any.'''
-    if solve(programState.getValue(Tokens.Identifier(-1,-1, "Crabsさん")), forLoop.comparisonOperator, forLoop.controlValue):
+    if not solve(programState.getValue(Tokens.Identifier(-1,-1, "Crabsさん")), forLoop.comparisonOperator, forLoop.controlValue):
         return None # Returns if our for-loops' condition has been met.
     else:
         result = runCodeBlock(programState, forLoop.body) # Otherwise run the code block once more.
@@ -206,8 +208,6 @@ def runCodeBlock(programState : Program_State, codeBlock : ASTc.Code_Block, prog
         result = runFunctionCall(programState, code)
         if result != None:
             return result
-    
-    # CONTINUE HERE
     return runCodeBlock(programState, codeBlock, progress)
 
 A = TypeVar('A')

@@ -1,2 +1,10 @@
+.vscode
 source/__pycache__
-diederik*
+Opdracht_4.5
+*.o
+*flags
+*_stack.c
+*.bin
+*.elf
+*.ld
+*.map

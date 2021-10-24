@@ -168,7 +168,7 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel
         elif checkForPattern(tokens, TP.For_Loop_Increment_Definition):
             rest, expression = parseExpression(tokens[len(TP.For_Loop_Increment_Definition):], ASTc.Expression(nestLevel + 1), nestLevel+1)
             forLoop.increment = expression
-            return parseForLoop(rest, forLoop)
+            return parseForLoop(rest[1:], forLoop, nestLevel)
         #TODO: ADD ERROR HANDLING
         unknownError(__file__) # Some unexpected syntax
     elif forLoop.controlValue == None: # If our for loop doesnt have a control value yet, parse it!
@@ -178,6 +178,7 @@ def parseForLoop(tokens : List[Tokens.Token], forLoop : ASTc.For_Loop, nestLevel
                 forLoop.controlValue = expression
                 return rest[len(TP.For_Loop_End):], forLoop
         #TODO: ADD ERROR HANDLING
+        print(token)
         unknownError(__file__) # Some unexpected syntax
     #TODO: ADD ERROR HANDLING
     unknownError(__file__) # Some unexpected syntax

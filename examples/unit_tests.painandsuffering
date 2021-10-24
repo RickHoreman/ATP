@@ -1,0 +1,135 @@
+F evenちゃん「nくん」山
+
+F oddたん「nさん」山
+
+F oddたん「nさん」OwO
+    negativeCheckちゃんはnさん < 〇です
+    negativeCheckちゃんはyeshですか？
+    ね～ OwO
+        yeet 〇-一 山
+    UwU
+    nさんは〇ですか？
+    ね～ OwO
+        yeet nyet 山
+    UwU
+    え！？ OwO
+        yeet evenちゃん「nさん-一」山
+    UwU
+UwU
+
+F evenちゃん「nくん」OwO
+    negativeCheckちゃんはnくん < 〇です
+    negativeCheckちゃんはyeshですか？
+    ね～ OwO
+        yeet 〇-一 山
+    UwU
+    nくんは〇ですか？
+    ね～ OwO
+        yeet yesh 山
+    UwU
+    え！？ OwO
+        yeet oddたん「nくん-一」山
+    UwU
+UwU
+
+F sommigさま「nばか」OwO
+    result殿は〇です
+    Well Crabs let me ask you a question.
+    If I nばか, is it >= enough?
+    When I throw it back, is OwO result殿はresult殿+Crabsさんです UwU fast enough?
+    If I slow it down, can 一 handle that?
+    tHe fOrMuLA
+    yeet result殿 山
+UwU
+
+F sadge先生「」OwO
+    きゅうたんは【六+三】です
+    unevenぱいせんはoddたん「きゅうたん」です
+    outputせんぱいは〇です
+    unevenぱいせんはyeshですか？
+    ね～ OwO
+        outputせんぱいはsommigさま「きゅうたん」です
+    UwU
+    yeet outputせんぱい山
+UwU
+
+F recursiveExpression王女様「」OwO
+    variableくんは八です
+    yeet 【四十二 +【三 - sommigさま「九」】】+【variableくん + 七 - 十一】 山
+UwU
+
+F compareさん「firstさん。secondさん。modeさん」OwO
+    modeさんは〇ですか？
+    ね～ OwO
+        yeet firstさん > secondさん 山
+    UwU
+    modeさんは一ですか？
+    ね～ OwO
+        yeet firstさん >= secondさん 山
+    UwU
+    modeさんは二ですか？
+    ね～ OwO
+        yeet firstさん < secondさん 山
+    UwU
+    modeさんは三ですか？
+    ね～ OwO
+        yeet firstさん <= secondさん 山
+    UwU
+    え！？OwO
+        yeet 〇-一 山
+    UwU
+UwU
+
+F forLoopさん「startingValueさん。incrementさん。controlValueさん。modeさん」OwO
+    modeさんは〇ですか？
+    ね～ OwO
+        result殿は〇です
+        Well Crabs let me ask you a question.
+        If I back it up, is it < enough?
+        When I throw it back, is OwO result殿はresult殿+一です UwU fast enough?
+        If I speed it up, can controlValueさん handle that?
+        tHe fOrMuLA
+        yeet result殿 山
+    UwU
+    modeさんは一ですか？
+    ね～ OwO
+        result殿は〇です
+        Well Crabs let me ask you a question.
+        If I startingValueさん, is it < enough?
+        When I throw it back, is OwO result殿はresult殿+一です UwU fast enough?
+        If I speed it up, can controlValueさん handle that?
+        tHe fOrMuLA
+        yeet result殿 山
+    UwU
+    modeさんは二ですか？
+    ね～ OwO
+        result殿は〇です
+        Well Crabs let me ask you a question.
+        If I startingValueさん, is it > enough?
+        When I throw it back, is OwO result殿はresult殿+一です UwU fast enough?
+        If I slow it down, can controlValueさん handle that?
+        tHe fOrMuLA
+        yeet result殿 山
+    UwU
+    modeさんは三ですか？
+    ね～ OwO
+        result殿は〇です
+        Well Crabs let me ask you a question.
+        If I startingValueさん, is it < enough?
+        When I throw it back, is OwO result殿はresult殿+一です UwU fast enough?
+        If I incrementさん it up, can controlValueさん handle that?
+        tHe fOrMuLA
+        yeet result殿 山
+    UwU
+    え！？OwO
+        yeet 〇-一 山
+    UwU
+UwU
+
+F printXtimesちゃん「printItemくん。xTimesばか」OwO
+    Well Crabs let me ask you a question.
+    If I back it up, is it < enough?
+    When I throw it back, is OwO yabe printItemくん 山 UwU fast enough?
+    If I speed it up, can xTimesばか handle that?
+    tHe fOrMuLA
+UwU

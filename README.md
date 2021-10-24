@@ -149,6 +149,24 @@ You can use any of the following file extensions for your Sadge code files:
 
 ****Note: All regular arguments must be passed _before_ the flags, and cannot start with a `-`.
 
+## The compiler
+
+The compiled version of Sadge works largely the same as the interpreted version, with one key difference.
+**In compiled Sadge, you cannot have special characters in function names.** Most notably for Sadge this is characters like kana and kanji, with the one exception being the honorific, which will automatically be converted to romaji.
+The reason behind this is a limitation with Assembly, which only supports ASCII characters. *Variables can still contain whatever special characters the interpreted version of Sadge supports seeing as those never actually end up as labels in the generated Assembly file.*
+
+This conversion to romaji works as follows: `functionさん -> function_san` and `function先生 -> function_sensei_k`. Notice the additional `_k` when the honorific is written with kanji, this is to differentiate between honorifics that are supported in both hiragana and kanji.
+
+Aside from that the full Sadge feature set is supported, however for printing (`yeet *expression*`) it is required for some print function to be defined, *outside of the Sadge code*, that compiles with the label `print`. An example of how this works with c++ code can be found in `Cpp_Compiler_Test/main.cpp`, right at the top of the file.
+
+As was probably already apparent, the compiler doesn't compile straight to binary, it instead compiles to cortex-m0 assembly, which can then be included in, for example, c++ projects for the Arduino Due. One such example project can be found in `Cpp_Compiler_Test`, which contains unit tests. Provided is a Makefile which hooks up with the [hwlib](https://github.com/wovo/hwlib) & [bmptk](https://github.com/wovo/bmptk) Makefile system, after first running the Sadge compiler.
+
+## Running the compiler
+
+To run the compiler from terminal, make sure you are in the same directory as the Makefile (`Cpp_Compiler_Test`). You can then use the Makefile more or less like any other. For instance just `make run` or `make build`. A notable exception is that `make clean` would clean all .o, .bin, etc. files but not the Sadge.o in the asm directory, therefore a `cleanASM` target is provided, which can be stacked like `make clean cleanASM` or even `make cleanASM run`.
+
+To select which Sadge code file should be compiled, change the `SADGE` variable in the Makefile to direct to the desired file. The flags can also be changed under `SADGEFLAGS` (note the `-C` flag). Currently it is only supported to include one Sadge file, but that file can contain any arbitrary number of functions, so that should be fine, even if not ideal.
+
 ---
 
 The following part is mostly only for that one person who knows the reason behind the endline character :).
@@ -224,8 +242,27 @@ Opties uit de opdracht reader:
 
 - [Eigen taal] Sadge is uiteraard een zelf bedachte taal, de eventuele extra voor originaliteit/creativiteit is your call.
 
-Andere extra functionaliteit (niet besproken met docent) waar ik nog even de aandacht op wil leggen: 
+#### Andere extra functionaliteit (niet besproken met docent) waar ik nog even de aandacht op wil leggen: 
 
-- Het commandline flag systeem zie [source/Sadge.py] en [source/utilities.py][regels 80-101]. (eerder in de reader in detail besproken)
+- Het commandline flag systeem zie [source/Sadge.py] en [source/utilities.py][regels 80-101]. (eerder in de readme in detail besproken)
 
 - De mogelijkheid om de run time te printen, per deel en in totaal, met de flag `-T`. Hiervoor is de decorator gebruikt die ook bij de verplichte functionaliteiten wordt besproken.
+
+---
+
+### Compiler
+Voor dit deel is er niet echt een duidelijke template aanwezig dus ik freeball het een beetje op basis van het interpreter deel, overigens alle dingen die dan dubbel zouden moeten kun je gewoon inzien bij wat er al staat, dat lijkt me anders een beetje overbodig.
+
+Must haves (nieuw aan de compiler)
+
+- [Unit tests] zijn te vinden in `Cpp_Compiler_Test/main.cpp`, ik heb ze in platte c++ geschreven dus daar zijn verder geen libraries oid voor nodig.
+
+- [Makefile] die de compiler aan roept en de output mee compileert met een c++ project is te vinden in `Cpp_Compiler_Test/Makefile`, een uitgebreide uitleg hiervan staat bij het kopje [The Compiler](#the-compiler).
+
+Should/Could-haves:
+
+- [Het showen van aanvullende functionaliteit door middel van unit-tests], dit is te vinden in `Cpp_Compiler_Test/main.cpp`. Bovenin (regels 24-25) staat een kleine demo van de print functionaliteit en op regels 115-121 staat een test van de recursieve expressies (expressies in expressies). De for-loops worden ook uitgebreid getest op regels 255-284.
+
+- [Optimalisatie van de compiler]. Heel subtiel, in het oplossen van expressions worden nooit meer dan twee registers gebruikt, zelfs met vele lagen expressions in elkaar. (met uitzondering van function calls in expressions natuurlijk)
+
+- De [andere extra functionaliteit](#andere-extra-functionaliteit-niet-besproken-met-docent-waar-ik-nog-even-de-aandacht-op-wil-leggen) van de interpreter is er ook voor de compiler.

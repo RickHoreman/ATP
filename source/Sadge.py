@@ -1,6 +1,7 @@
 import Lexer
 import Parser
 import Interpreter
+import Compiler
 import sys
 from utilities import parseRuntimeArguments, stringEndsWithAnyOf
 from KeywordCollections import fileExtensions
@@ -45,3 +46,13 @@ if 'I' in options:
 
     if 'T' in options:
         print(f"Total Interpreter run time: {Lexer.lex.time + Parser.parse.time + Interpreter.run.time}")
+
+if 'C' in options:
+    if 'D' in options:
+        print("\nRunning compiler.")
+    Compiler.compile(ASTs)
+    if 'T' in options:
+        print(f"Compiler ran in {Compiler.compile.time} seconds.")
+
+    if 'T' in options:
+        print(f"Total run time: {Lexer.lex.time + Parser.parse.time + Compiler.compile.time}")

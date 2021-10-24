@@ -40,7 +40,7 @@ class Logic_Operator(Operator):
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
-class Assignment(Operator):
+class Assignment(Token):
     def __init__(self, lineNr : int, charNr : int) -> None:
         super().__init__(lineNr, charNr)
 
