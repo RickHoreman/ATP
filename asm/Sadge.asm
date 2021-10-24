@@ -32,6 +32,7 @@ even_chan:
     mov r0, #0
     mov r1, #1
     sub r0, r0, r1
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
 .if5.22end:
@@ -40,6 +41,7 @@ even_chan:
     cmp r1, r2
     bne .if5.26else
     mov r0, #1
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
     b .if5.26end
@@ -49,6 +51,7 @@ even_chan:
     sub r0, r0, r1
     bl odd_tan
     mov r0, r0
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
 .if5.26end:
@@ -78,6 +81,7 @@ odd_tan:
     mov r0, #0
     mov r1, #1
     sub r0, r0, r1
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
 .if5.7end:
@@ -86,6 +90,7 @@ odd_tan:
     cmp r1, r2
     bne .if5.11else
     mov r0, #0
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
     b .if5.11end
@@ -95,6 +100,7 @@ odd_tan:
     sub r0, r0, r1
     bl even_chan
     mov r0, r0
+    mov sp, r7
     add sp, sp, #12
     pop {r7, pc}
 .if5.11end:
@@ -137,6 +143,7 @@ sommig_sama:
     cmp r1, #1
     beq .fl21.38
     ldr r0, [r7, #8]
+    mov sp, r7
     add sp, sp, #24
     pop {r7, pc}
     mov sp, r7
@@ -167,6 +174,7 @@ sadge_sensei_k:
     str r1, [r7, #12]
 .if5.49end:
     ldr r0, [r7, #12]
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
     mov sp, r7
@@ -198,6 +206,7 @@ recursiveExpression_oujosama_k:
     mov r1, r0
     pop {r0}
     add r0, r0, r1
+    mov sp, r7
     add sp, sp, #8
     pop {r7, pc}
     mov sp, r7
@@ -224,6 +233,7 @@ compare_san:
 .gt22.64true:
     mov r0, #1
 .gt22.64end:
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
 .if5.62end:
@@ -240,6 +250,7 @@ compare_san:
 .ge22.68true:
     mov r0, #1
 .ge22.68end:
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
 .if5.66end:
@@ -256,6 +267,7 @@ compare_san:
 .lt22.72true:
     mov r0, #1
 .lt22.72end:
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
 .if5.70end:
@@ -272,6 +284,7 @@ compare_san:
 .le22.76true:
     mov r0, #1
 .le22.76end:
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
     b .if5.74end
@@ -279,6 +292,7 @@ compare_san:
     mov r0, #0
     mov r1, #1
     sub r0, r0, r1
+    mov sp, r7
     add sp, sp, #16
     pop {r7, pc}
 .if5.74end:
@@ -327,6 +341,7 @@ forLoop_san:
     cmp r1, #1
     beq .fl32.88
     ldr r0, [r7, #20]
+    mov sp, r7
     add sp, sp, #36
     pop {r7, pc}
 .if5.84end:
@@ -363,6 +378,7 @@ forLoop_san:
     cmp r1, #1
     beq .fl37.98
     ldr r0, [r7, #20]
+    mov sp, r7
     add sp, sp, #36
     pop {r7, pc}
 .if5.94end:
@@ -400,6 +416,7 @@ forLoop_san:
     cmp r1, #1
     beq .fl37.108
     ldr r0, [r7, #20]
+    mov sp, r7
     add sp, sp, #36
     pop {r7, pc}
 .if5.104end:
@@ -436,6 +453,7 @@ forLoop_san:
     cmp r1, #1
     beq .fl37.118
     ldr r0, [r7, #20]
+    mov sp, r7
     add sp, sp, #36
     pop {r7, pc}
     b .if5.114end
@@ -443,6 +461,7 @@ forLoop_san:
     mov r0, #0
     mov r1, #1
     sub r0, r0, r1
+    mov sp, r7
     add sp, sp, #36
     pop {r7, pc}
 .if5.114end:
